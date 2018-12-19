@@ -1,3 +1,7 @@
+# darknet
+基本上是原版的darknet，我写一些注释以及做一些自己用的修改，backup的文件夹以及权重没有传上来。
+
+
 ![Darknet Logo](http://pjreddie.com/media/files/darknet-black-small.png)
 
 # Darknet #
