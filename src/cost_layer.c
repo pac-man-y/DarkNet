@@ -7,6 +7,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/*
+第一个函数就是表示的损失函数的类型：
+所以一共就是支持这六种损失函数：
+比较熟的就是L2以及SEE(L2)了，在YOLO系列中使用的是
+COST_TYPE类型函数传递给char *get_cost_string（）这个函数
+然后根据返回的字符串来选择执行不同的损失函数
+*/
+
+
 COST_TYPE get_cost_type(char *s)
 {
     if (strcmp(s, "seg")==0) return SEG;

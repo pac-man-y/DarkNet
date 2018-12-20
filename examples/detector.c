@@ -4,11 +4,21 @@ static int coco_ids[] = {1,2,3,4,5,6,7,8,9,10,11,13,14,15,16,17,18,19,20,21,22,2
 
 
 //训练的主函数，接收参数：data配置:datacfg，网络配置cfgfile,权重：weightfile，gpu索引
+//训练这里其实没什么要改的，需要改的就是模型保存的步长以及训练日志是否要保存，所以太细节的东西我也看了
 void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, int ngpus, int clear)
 {
-    list *options = read_data_cfg(datacfg);
+    list *options = read_data_cfg(datacfg);   //读取数据配置
+    //训练图片路径以及存储路径
     char *train_images = option_find_str(options, "train", "data/train.list");
     char *backup_directory = option_find_str(options, "backup", "/backup/");
+
+    /*
+    srand函数是随机数发生器的初始化函数。
+    srand和rand()配合使用产生伪随机数序列。rand函数在产生随机数前，需要系统提供的生成伪随机数序列的
+    种子，rand根据这个种子的值产生一系列随机数。如果系统提供的种子没有变化，每次调用rand函数生成的伪
+    随机数序列都是一样的。
+    */
+
 
     srand(time(0));
     char *base = basecfg(cfgfile);
@@ -31,6 +41,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     network *net = nets[0];
 
     int imgs = net->batch * net->subdivisions * ngpus;
+    //打印学习率等参数
     printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", net->learning_rate, net->momentum, net->decay);
     data train, buffer;
 
@@ -138,7 +149,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         }
         //这里是保存模型的步长，小于1000的话每100次保存一次，大于1000的话每1000次存储一次
         //这里我改过了，原版是大于1000的话每10000次保存一次，这里的i不知道是batch还是epoch的意思
-        //我猜是epoch，或许都不是
+        //2018/12/20更新：这里的i就是batch的意思，每个batch到底前向传播几张图片是自己定的，需要考虑GPU内存的关系
         if(i%1000==0 || (i < 1000 && i%100 == 0)){
 #ifdef GPU
             if(ngpus != 1) sync_nets(nets, ngpus, 0);
@@ -147,7 +158,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             sprintf(buff, "%s/%s_%d.weights", backup_directory, base, i);
             save_weights(net, buff);
         }
-        free_data(train);
+        free_data(train);      //释放内存
     }
 #ifdef GPU
     if(ngpus != 1) sync_nets(nets, ngpus, 0);
@@ -563,6 +574,19 @@ void validate_detector_recall(char *cfgfile, char *weightfile)
 }
 
 
+/**
+ * 这里就是单张照片测试的代码：
+ * 
+ * char *datacfg              datacfg:类别书，测试图片路径，模型保存路径等一些参数都在这里面
+ * char *cfgfile              cfgfile:模型结构
+ * char *weightfile           权重文件，就是保存的模型
+ * char *filename             测试的文件，就是图片的路径，根目录就是darknet的路径
+ * float thresh               阈值，置信率大于thresh才显示或者保存
+ * float hier_thresh,         暂时不是很懂这个
+ * char *outfile              保存文件名称
+ * int fullscreen             全屏？
+ * 
+ **/
 void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen)
 {
     list *options = read_data_cfg(datacfg);
@@ -587,8 +611,8 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
             if(!input) return;
             strtok(input, "\n");
         }
-        image im = load_image_color(input,0,0);
-        image sized = letterbox_image(im, net->w, net->h);
+        image im = load_image_color(input,0,0);    //载入图片数据，做成image类型的
+        image sized = letterbox_image(im, net->w, net->h);   
         //image sized = resize_image(im, net->w, net->h);
         //image sized2 = resize_max(im, net->w);
         //image sized = crop_image(sized2, -((net->w - sized2.w)/2), -((net->h - sized2.h)/2), net->w, net->h);
@@ -605,10 +629,10 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         //printf("%d\n", nboxes);
         //if (nms) do_nms_obj(boxes, probs, l.w*l.h*l.n, l.classes, nms);
         if (nms) do_nms_sort(dets, nboxes, l.classes, nms);
-        draw_detections(im, dets, nboxes, thresh, names, alphabet, l.classes);
+        draw_detections(im, dets, nboxes, thresh, names, alphabet, l.classes);     //画框
         free_detections(dets, nboxes);
-        if(outfile){
-            save_image(im, outfile);
+        if(outfile){      //是否保存文件
+            save_image(im, outfile); 
         }
         else{
             save_image(im, "predictions");
@@ -790,7 +814,7 @@ void network_detect(network *net, image im, float thresh, float hier_thresh, flo
 }
 */
 
-//训练的时候如果参数是 "detector" 的话，就会跳转到这个函数
+//训练的时候如果参数是 "detector" 的话，就会跳转到这个函数,然后看后面是跟着哪个参数，检测的时候是test
 void run_detector(int argc, char **argv)
 {
     char *prefix = find_char_arg(argc, argv, "-prefix", 0);
