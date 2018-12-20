@@ -612,7 +612,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
             strtok(input, "\n");
         }
         image im = load_image_color(input,0,0);    //载入图片数据，做成image类型的
-        image sized = letterbox_image(im, net->w, net->h);   
+        image sized = letterbox_image(im, net->w, net->h);   //重构图像大小
         //image sized = resize_image(im, net->w, net->h);
         //image sized2 = resize_max(im, net->w);
         //image sized = crop_image(sized2, -((net->w - sized2.w)/2), -((net->h - sized2.h)/2), net->w, net->h);
@@ -628,17 +628,18 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         detection *dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, 0, 1, &nboxes);
         //printf("%d\n", nboxes);
         //if (nms) do_nms_obj(boxes, probs, l.w*l.h*l.n, l.classes, nms);
-        if (nms) do_nms_sort(dets, nboxes, l.classes, nms);
+        if (nms) do_nms_sort(dets, nboxes, l.classes, nms);   //nms排序？
         draw_detections(im, dets, nboxes, thresh, names, alphabet, l.classes);     //画框
         free_detections(dets, nboxes);
         if(outfile){      //是否保存文件
-            save_image(im, outfile); 
+            save_image(im, outfile);     //如果有这一项就用保存的名字
         }
         else{
-            save_image(im, "predictions");
+            save_image(im, "predictions"); //如果没有这个参数，默认保存predictions.jpg
 #ifdef OPENCV
             make_window("predictions", 512, 512, 0);
             show_image(im, "predictions", 0);
+            //如果是编译opencv的话就是执行里面的代码
 #endif
         }
 
@@ -814,6 +815,7 @@ void network_detect(network *net, image im, float thresh, float hier_thresh, flo
 }
 */
 
+
 //训练的时候如果参数是 "detector" 的话，就会跳转到这个函数,然后看后面是跟着哪个参数，检测的时候是test
 void run_detector(int argc, char **argv)
 {
@@ -869,6 +871,7 @@ void run_detector(int argc, char **argv)
     else if(0==strcmp(argv[2], "valid2")) validate_detector_flip(datacfg, cfg, weights, outfile);
     else if(0==strcmp(argv[2], "recall")) validate_detector_recall(cfg, weights);
     else if(0==strcmp(argv[2], "demo")) {
+        //如果是demo的话，这里是检测视频的函数，这个函数在demo.c里。
         list *options = read_data_cfg(datacfg);
         int classes = option_find_int(options, "classes", 20);
         char *name_list = option_find_str(options, "names", "data/names.list");

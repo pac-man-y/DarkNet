@@ -220,16 +220,17 @@ void draw_bbox(image a, box bbox, int w, float r, float g, float b)
     }
 }
 
+
 image **load_alphabet()
 {
     int i, j;
     const int nsize = 8;
-    image **alphabets = calloc(nsize, sizeof(image));
+    image **alphabets = calloc(nsize, sizeof(image));   //分配空间
     for(j = 0; j < nsize; ++j){
-        alphabets[j] = calloc(128, sizeof(image));
+        alphabets[j] = calloc(128, sizeof(image));    
         for(i = 32; i < 127; ++i){
             char buff[256];
-            sprintf(buff, "data/labels/%d_%d.png", i, j);
+            sprintf(buff, "data/labels/%d_%d.png", i, j);     //可以认为是加载字符集的
             alphabets[j][i] = load_image_color(buff, 0, 0);
         }
     }

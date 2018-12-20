@@ -11,9 +11,13 @@
 
 #define DEMO 1
 
-#ifdef OPENCV
+#ifdef OPENCV         //也就是说只有编译了opencv的话，demo才是可以用的，下面这些代码才开始编译
 
-static char **demo_names;
+/**
+ * 静态变量当然都是存储在静态存储区的，只能当前文件使用，其他文件即使使用extern也是无法使用的
+ **/
+
+static char **demo_names;         //char **型的变量，这些在demo函数里用到，作为静态变量
 static image **demo_alphabet;
 static int demo_classes;
 
@@ -184,10 +188,21 @@ void *detect_loop(void *ptr)
     }
 }
 
+//这就是函数的定义了，我好像也没有找到函数的声明，demo.h里面好像也没有声明,这个就是定义加声明了吧
+/**
+ *  cfgfile：    网络结构配置文件路径
+ *  weightfile： 权重文件
+ *  thresh：     阈值，如果给的话就会只显示阈值之上的，默认的阈值好像是0.5？
+ *  cam_index:   这个就是摄像头的索引了
+ * 
+ * 
+ **/
+
 void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const char *filename, char **names, int classes, int delay, char *prefix, int avg_frames, float hier, int w, int h, int frames, int fullscreen)
 {
     //demo_frame = avg_frames;
-    image **alphabet = load_alphabet();
+    image **alphabet = load_alphabet();     
+    //函数圆形在image.c里面，是为了加载"data/labels/%d_%d.png"下的字符集的，应该是为了后面画框的时候加文字方便吧
     demo_names = names;
     demo_alphabet = alphabet;
     demo_classes = classes;

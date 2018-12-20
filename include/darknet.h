@@ -427,6 +427,7 @@ typedef enum {
     CONSTANT, STEP, EXP, POLY, STEPS, SIG, RANDOM
 } learning_rate_policy;
 
+//网络框架的类的定义
 typedef struct network{
     int n;
     int batch;
@@ -505,6 +506,11 @@ typedef struct {
     float aspect;
 } augment_args;
 
+/**
+ * image的类型定义:包括三维以及float *data，data定义是float型的。
+ * 这里的data定义成float类型的，应该是考虑到神经网络在前向传递的过程中
+ * 需要许多浮点运算，所以还是在输入的时候就转换成float型就比较方便吧。
+**/
 typedef struct {
     int w;
     int h;
@@ -512,10 +518,17 @@ typedef struct {
     float *data;
 } image;
 
+/**
+ * box类：
+ * 包括坐标(x,y),以及尺寸w,h。
+ * 这个类可以类比opencv里的Rect类 
+ **/
+
 typedef struct{
     float x, y, w, h;
 } box;
 
+//detection的定义，具体我还没看，但应该是检测的返回值
 typedef struct detection{
     box bbox;
     int classes;
