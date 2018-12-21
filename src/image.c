@@ -810,10 +810,13 @@ void letterbox_image_into(image im, int w, int h, image boxed)
     free_image(resized);
 }
 
+
+//输入图像以及一个宽和高，反正是把图像调整到尺寸是w,h
 image letterbox_image(image im, int w, int h)
 {
     int new_w = im.w;
     int new_h = im.h;
+    // 获取图像的宽和高
     if (((float)w/im.w) < ((float)h/im.h)) {
         new_w = w;
         new_h = (im.h * w)/im.w;
@@ -821,15 +824,21 @@ image letterbox_image(image im, int w, int h)
         new_h = h;
         new_w = (im.w * h)/im.h;
     }
-    image resized = resize_image(im, new_w, new_h);
-    image boxed = make_image(w, h, im.c);
-    fill_image(boxed, .5);
+    //这两个判断需要按照图像的宽高比来设置新的图像。
+
+    image resized = resize_image(im, new_w, new_h);   //这个就是新的图像了
+    image boxed = make_image(w, h, im.c);     //建立一个图像
+    fill_image(boxed, .5);       //全部填充0.5，就是中级灰度了
     //int i;
     //for(i = 0; i < boxed.w*boxed.h*boxed.c; ++i) boxed.data[i] = 0;
-    embed_image(resized, boxed, (w-new_w)/2, (h-new_h)/2); 
+    embed_image(resized, boxed, (w-new_w)/2, (h-new_h)/2);     
+    //把resize后的图像放在boxed的最中间。
     free_image(resized);
+    //释放内存？（所以这里就能显示C++的一点好处，image如果是一个类的话，会自带析构函数，就不用手动释放内存了）
     return boxed;
+    //返回缩放之后放在图像中间的最终图像，其他地方使用0.5中级灰度填充
 }
+
 
 image resize_max(image im, int max)
 {
@@ -915,6 +924,7 @@ float three_way_min(float a, float b, float c)
     return (a < b) ? ( (a < c) ? a : c) : ( (b < c) ? b : c) ;
 }
 
+//YUV格式转换为RGB格式
 void yuv_to_rgb(image im)
 {
     assert(im.c == 3);
@@ -1040,6 +1050,7 @@ void hsv_to_rgb(image im)
     }
 }
 
+//灰度图像转换为3通道，看这个系数应该是RGB了
 void grayscale_image_3c(image im)
 {
     assert(im.c == 3);
@@ -1058,6 +1069,7 @@ void grayscale_image_3c(image im)
     }
 }
 
+// RGB图像
 image grayscale_image(image im)
 {
     assert(im.c == 3);
@@ -1074,6 +1086,7 @@ image grayscale_image(image im)
     return gray;
 }
 
+//就是一个二值化图像的操作
 image threshold_image(image im, float thresh)
 {
     int i;

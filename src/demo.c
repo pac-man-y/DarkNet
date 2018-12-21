@@ -227,7 +227,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
     for (i = 0; i < demo_frame; ++i){
         predictions[i] = calloc(demo_total, sizeof(float));
     }
-    avg = calloc(demo_total, sizeof(float));
+    avg = calloc(demo_total, sizeof(float));     //开辟空间
 
     //如果有视频文件，则打开视频文件，如果没有，则打开摄像头
     if(filename){
@@ -247,14 +247,20 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
     buff_letter[0] = letterbox_image(buff[0], net->w, net->h);
     buff_letter[1] = letterbox_image(buff[0], net->w, net->h);
     buff_letter[2] = letterbox_image(buff[0], net->w, net->h);
-
-    int count = 0;
+    /**
+     * 这里相当于是把图像缩放到和网络输入一样的大小喽，所以这里才是刚刚把图片读入进来
+     * letterbox_image()   函数原型在  image.c里
+     * 输入图像以及一个宽和高，反正是把图像调整到尺寸是w,h,
+     * 还要保证原图的宽高比，如果不够的话就填充灰度
+    **/
+    int count = 0;    //计数索引
     if(!prefix){
-        make_window("Demo", 1352, 1013, fullscreen);
+        make_window("Demo", 1352, 1013, fullscreen);     //创建一个窗口
     }
 
-    demo_time = what_time_is_it_now();
-
+    demo_time = what_time_is_it_now();      //当前时间
+ 
+    //demo_done 应该是视频读取完成的一个标志，默认是0，在文件的最开始有定义
     while(!demo_done){
         buff_index = (buff_index + 1) %3;
         if(pthread_create(&fetch_thread, 0, fetch_in_thread, 0)) error("Thread creation failed");
