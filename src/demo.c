@@ -202,19 +202,24 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
 {
     //demo_frame = avg_frames;
     image **alphabet = load_alphabet();     
-    //函数圆形在image.c里面，是为了加载"data/labels/%d_%d.png"下的字符集的，应该是为了后面画框的时候加文字方便吧
-    demo_names = names;
-    demo_alphabet = alphabet;
-    demo_classes = classes;
-    demo_thresh = thresh;
-    demo_hier = hier;
-    printf("Demo\n");
-    net = load_network(cfgfile, weightfile, 0);
-    set_batch_network(net, 1);
+    //函数原型在image.c里面，是为了加载"data/labels/%d_%d.png"下的字符集的，应该是为了后面画框的时候加文字方便吧
+    demo_names = names;          //char**
+    demo_alphabet = alphabet;    //image **
+    demo_classes = classes;      //int     
+    demo_thresh = thresh;        //float   阈值，高于阈值的才显示
+    demo_hier = hier;            //float 
+    printf("Demo\n");      //打印一个参数
+    net = load_network(cfgfile, weightfile, 0);   //导入网路结构
+    set_batch_network(net, 1);        //
+
+    // typedef unsigned long int pthread_t;
+    // 这里应该是为了多线程处理的，没有看懂
     pthread_t detect_thread;
     pthread_t fetch_thread;
+   
 
-    srand(2222222);
+    //srand()需要配合rand()使用，这里就是产生伪随机数据种子。
+    srand(2222222);    
 
     int i;
     demo_total = size_network(net);
@@ -224,6 +229,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
     }
     avg = calloc(demo_total, sizeof(float));
 
+    //如果有视频文件，则打开视频文件，如果没有，则打开摄像头
     if(filename){
         printf("video file: %s\n", filename);
         cap = open_video_stream(filename, 0, 0, 0, 0);
@@ -232,7 +238,9 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
     }
 
     if(!cap) error("Couldn't connect to webcam.\n");
+    //如果是没有视频或者摄像头，那么报错
 
+    //这里是把图片复制了三个？
     buff[0] = get_image_from_stream(cap);
     buff[1] = copy_image(buff[0]);
     buff[2] = copy_image(buff[0]);
