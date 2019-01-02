@@ -86,10 +86,11 @@ detection *avg_predictions(network *net, int *nboxes)
     return dets;
 }
 
+//  这个应该是预测的函数啊
 void *detect_in_thread(void *ptr)
 {
     running = 1;
-    float nms = .4;
+    float nms = .4;    
 
     layer l = net->layers[net->n-1];
     float *X = buff_letter[(buff_index+2)%3].data;
@@ -153,21 +154,21 @@ void *fetch_in_thread(void *ptr)
     return 0;
 }
 
-void *display_in_thread(void *ptr)
+void *display_in_thread(void *ptr)      //显示图像，可以调整阈值参数,对应QRST四个字母，具体需要看下面的
 {
     int c = show_image(buff[(buff_index + 1)%3], "Demo", 1);
     if (c != -1) c = c%256;
     if (c == 27) {
         demo_done = 1;
         return 0;
-    } else if (c == 82) {
+    } else if (c == 82) {           //R   
         demo_thresh += .02;
-    } else if (c == 84) {
+    } else if (c == 84) {           //T
         demo_thresh -= .02;
         if(demo_thresh <= .02) demo_thresh = .02;
-    } else if (c == 83) {
+    } else if (c == 83) {           //  S
         demo_hier += .02;
-    } else if (c == 81) {
+    } else if (c == 81) {          // Q
         demo_hier -= .02;
         if(demo_hier <= .0) demo_hier = .0;
     }
@@ -272,7 +273,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
         }else{
             char name[256];
             sprintf(name, "%s_%08d", prefix, count);
-            save_image(buff[(buff_index + 1)%3], name);
+            save_image(buff[(buff_index + 1)%3], name);   //重命名图片保存
         }
         pthread_join(fetch_thread, 0);
         pthread_join(detect_thread, 0);
