@@ -86,7 +86,8 @@ detection *avg_predictions(network *net, int *nboxes)
     return dets;
 }
 
-//  这个应该是预测的函数啊
+//  这个就是预测的函数，只是以多线程的方式放入demo的主函数了，我一开始看代码的时候把多线程相关的
+//  全部忽略掉了，后来实在是找不到，原来在这里，这样就好了。
 void *detect_in_thread(void *ptr)
 {
     running = 1;
@@ -211,11 +212,12 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
     demo_hier = hier;            //float 
     printf("Demo\n");      //打印一个参数
     net = load_network(cfgfile, weightfile, 0);   //导入网路结构
-    set_batch_network(net, 1);        //
+    set_batch_network(net, 1);        
 
     // typedef unsigned long int pthread_t;
     // 这里应该是为了多线程处理的，没有看懂
-    pthread_t detect_thread;
+    // 所以这里应该就是创建了两个线程，
+    pthread_t detect_thread; 
     pthread_t fetch_thread;
    
 
@@ -276,8 +278,8 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
             sprintf(name, "%s_%08d", prefix, count);
             save_image(buff[(buff_index + 1)%3], name);   //重命名图片保存
         }
-        pthread_join(fetch_thread, 0);
-        pthread_join(detect_thread, 0);
+        pthread_join(fetch_thread, 0); 
+        pthread_join(detect_thread, 0);    //所以加入线程就是这个命令了
         ++count;
     }
 }

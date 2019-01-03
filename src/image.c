@@ -548,6 +548,9 @@ int show_image(image p, const char *name, int ms)
 #endif
 }
 
+
+
+
 void save_image_options(image im, const char *name, IMTYPE f, int quality)
 {
     char buff[256];
