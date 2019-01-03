@@ -535,7 +535,8 @@ void rgbgr_image(image im)
     }
 }
 
-int show_image(image p, const char *name, int ms)
+//显示单张图片的函数，如果没有编译opencv，这里就把图片保存起来，保存的名称就是name.png
+int show_image(image p, const char *name, int ms)     
 {
 #ifdef OPENCV
     int c = show_image_cv(p, name, ms);
@@ -811,7 +812,7 @@ void letterbox_image_into(image im, int w, int h, image boxed)
 }
 
 
-//输入图像以及一个宽和高，反正是把图像调整到尺寸是w,h
+//输入图像以及一个宽和高，反正是把图像调整到尺寸是w,h,还要保证原图的宽高比，如果不够的话就填充灰度
 image letterbox_image(image im, int w, int h)
 {
     int new_w = im.w;

@@ -23,7 +23,7 @@ static int demo_classes;
 
 static network *net;
 static image buff [3];
-static image buff_letter[3];
+static image buff_letter[3];     //buff_letter就是image类型的
 static int buff_index = 0;
 static void * cap;
 static float fps = 0;
@@ -156,7 +156,7 @@ void *fetch_in_thread(void *ptr)
 
 void *display_in_thread(void *ptr)      //显示图像，可以调整阈值参数,对应QRST四个字母，具体需要看下面的
 {
-    int c = show_image(buff[(buff_index + 1)%3], "Demo", 1);
+    int c = show_image(buff[(buff_index + 1)%3], "Demo", 1);      //这个就是显示图像了
     if (c != -1) c = c%256;
     if (c == 27) {
         demo_done = 1;
@@ -249,6 +249,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
     buff_letter[1] = letterbox_image(buff[0], net->w, net->h);
     buff_letter[2] = letterbox_image(buff[0], net->w, net->h);
     /**
+     * buff_letter 是一个image类型的数组
      * 这里相当于是把图像缩放到和网络输入一样的大小喽，所以这里才是刚刚把图片读入进来
      * letterbox_image()   函数原型在  image.c里
      * 输入图像以及一个宽和高，反正是把图像调整到尺寸是w,h,
@@ -256,20 +257,20 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
     **/
     int count = 0;    //计数索引
     if(!prefix){
-        make_window("Demo", 1352, 1013, fullscreen);     //创建一个窗口
+        make_window("Demotest", 1352, 1013, fullscreen);     //创建一个窗口，原函数在IMAGE_OPENCV.CPP里
     }
 
     demo_time = what_time_is_it_now();      //当前时间
  
     //demo_done 应该是视频读取完成的一个标志，默认是0，在文件的最开始有定义
     while(!demo_done){
-        buff_index = (buff_index + 1) %3;
+        buff_index = (buff_index + 1) %3;    //字面意思应该是缓存索引
         if(pthread_create(&fetch_thread, 0, fetch_in_thread, 0)) error("Thread creation failed");
         if(pthread_create(&detect_thread, 0, detect_in_thread, 0)) error("Thread creation failed");
         if(!prefix){
-            fps = 1./(what_time_is_it_now() - demo_time);
-            demo_time = what_time_is_it_now();
-            display_in_thread(0);
+            fps = 1./(what_time_is_it_now() - demo_time);   //这个就是帧率了
+            demo_time = what_time_is_it_now();        //现在的时间
+            display_in_thread(0);         //这就是个显示图像的了，所以检测的在哪里呢？
         }else{
             char name[256];
             sprintf(name, "%s_%08d", prefix, count);

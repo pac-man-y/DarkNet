@@ -25,6 +25,7 @@ IplImage *image_to_ipl(image im)
     return disp;
 }
 
+//IPL是opencv的C接口，这里就是一个图像的 转换
 image ipl_to_image(IplImage* src)
 {
     int h = src->height;
@@ -45,6 +46,7 @@ image ipl_to_image(IplImage* src)
     return im;
 }
 
+//image GO Mat，Mat是OPENCV的新接口
 Mat image_to_mat(image im)
 {
     image copy = copy_image(im);
@@ -121,7 +123,7 @@ int show_image_cv(image im, const char* name, int ms)
 
 void make_window(char *name, int w, int h, int fullscreen)
 {
-    namedWindow(name, WINDOW_NORMAL); 
+    namedWindow(name, WINDOW_NORMAL);    //这个是一个可以调整大小的windows,用鼠标来调整
     if (fullscreen) {
         setWindowProperty(name, CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
     } else {

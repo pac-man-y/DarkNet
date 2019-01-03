@@ -589,9 +589,10 @@ void validate_detector_recall(char *cfgfile, char *weightfile)
  **/
 void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen)
 {
-    list *options = read_data_cfg(datacfg);
+    list *options = read_data_cfg(datacfg);      //配置文件
     char *name_list = option_find_str(options, "names", "data/names.list");
-    char **names = get_labels(name_list);
+    char **names = get_labels(name_list); 
+    //这个都是读取配置文件的
 
     image **alphabet = load_alphabet();
     network *net = load_network(cfgfile, weightfile, 0);
@@ -628,7 +629,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         detection *dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, 0, 1, &nboxes);
         //printf("%d\n", nboxes);
         //if (nms) do_nms_obj(boxes, probs, l.w*l.h*l.n, l.classes, nms);
-        if (nms) do_nms_sort(dets, nboxes, l.classes, nms);   //nms排序？
+        if (nms) do_nms_sort(dets, nboxes, l.classes, nms);   //非极大值抑制
         draw_detections(im, dets, nboxes, thresh, names, alphabet, l.classes);     //画框
         free_detections(dets, nboxes);
         if(outfile){      //是否保存文件
