@@ -528,7 +528,8 @@ typedef struct{
     float x, y, w, h;
 } box;
 
-//detection的定义，具体我还没看，但应该是检测的返回值
+//detection的定义，就是检测结果
+//  bbox 就是目标框,其他的是类别，置信度，等等一些参数。
 typedef struct detection{
     box bbox;
     int classes;

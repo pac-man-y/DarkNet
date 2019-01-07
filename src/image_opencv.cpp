@@ -114,10 +114,10 @@ image load_image_cv(char *filename, int channels)
 
 int show_image_cv(image im, const char* name, int ms)
 {
-    Mat m = image_to_mat(im);
-    imshow(name, m);
-    int c = waitKey(ms);
-    if (c != -1) c = c%256;
+    Mat m = image_to_mat(im);    //image转换成MAT
+    imshow(name, m);         //显示图片，
+    int c = waitKey(ms);     //演示
+    if (c != -1) c = c%256;     //对256取余，这个是返回waiktey的返回值，ascii码应该是
     return c;
 }
 

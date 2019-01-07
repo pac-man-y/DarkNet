@@ -87,26 +87,29 @@ detection *avg_predictions(network *net, int *nboxes)
 }
 
 //  这个就是预测的函数，只是以多线程的方式放入demo的主函数了，我一开始看代码的时候把多线程相关的
-//  全部忽略掉了，后来实在是找不到，原来在这里，这样就好了。
+//  全部忽略掉了，后来实在是找不到，原来在这里，这样就好了。线程中的检测函数
 void *detect_in_thread(void *ptr)
 {
-    running = 1;
-    float nms = .4;    
+    running = 1;       //就是一个标志位，表示正在进行当前的进程吧？
+    float nms = .4;     //nms是最大值检测的
 
     layer l = net->layers[net->n-1];
-    float *X = buff_letter[(buff_index+2)%3].data;
-    network_predict(net, X);
+    float *X = buff_letter[(buff_index+2)%3].data;   //数据，这就是直接图像数据的指针了
+    network_predict(net, X);    //网络预测
 
     /*
        if(l.type == DETECTION){
        get_detection_boxes(l, 1, 1, demo_thresh, probs, boxes, 0);
        } else */
-    remember_network(net);
+    remember_network(net);      
     detection *dets = 0;
     int nboxes = 0;
-    dets = avg_predictions(net, &nboxes);
+    dets = avg_predictions(net, &nboxes);    
+    //获得检测的结果
 
 
+
+    //注释掉的这一部分应该是以前的版本
     /*
        int i,j;
        box zero = {0};
@@ -128,14 +131,19 @@ void *detect_in_thread(void *ptr)
     }
      */
 
-    if (nms > 0) do_nms_obj(dets, nboxes, l.classes, nms);
 
+    //非极大值抑制，
+    if (nms > 0) do_nms_obj(dets, nboxes, l.classes, nms);
+    
+    //打印一些参数
     printf("\033[2J");
     printf("\033[1;1H");
     printf("\nFPS:%.1f\n",fps);
     printf("Objects:\n\n");
-    image display = buff[(buff_index+2) % 3];
+    image display = buff[(buff_index+2) % 3];    //需要显示的当前的图片
+    //图上面画框之类的函数，但是这里实际实际上并没有显示，显示的话还是需要用opencv来做
     draw_detections(display, dets, nboxes, demo_thresh, demo_names, demo_alphabet, demo_classes);
+    //释放内存应该是
     free_detections(dets, nboxes);
 
     demo_index = (demo_index + 1)%demo_frame;
@@ -143,15 +151,16 @@ void *detect_in_thread(void *ptr)
     return 0;
 }
 
-void *fetch_in_thread(void *ptr)
+void *fetch_in_thread(void *ptr)    //线程函数
 {
-    free_image(buff[buff_index]);
-    buff[buff_index] = get_image_from_stream(cap);
-    if(buff[buff_index].data == 0) {
+    free_image(buff[buff_index]);     //释放buff
+    buff[buff_index] = get_image_from_stream(cap);     //重新从视频中读入照片
+    if(buff[buff_index].data == 0) {   //如果没有读取到图片，则视频流结束
         demo_done = 1;
         return 0;
     }
-    letterbox_image_into(buff[buff_index], net->w, net->h, buff_letter[buff_index]);
+    letterbox_image_into(buff[buff_index], net->w, net->h, buff_letter[buff_index]);  
+    //如果读取成功的话就还是要letterbox，这个函数看demo主函数里的注释
     return 0;
 }
 
@@ -272,7 +281,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
         if(!prefix){
             fps = 1./(what_time_is_it_now() - demo_time);   //这个就是帧率了
             demo_time = what_time_is_it_now();        //现在的时间
-            display_in_thread(0);         //这就是个显示图像的了，所以检测的在哪里呢？
+            display_in_thread(0);         //这就是个显示图像的，检测是用多线程组织的
         }else{
             char name[256];
             sprintf(name, "%s_%08d", prefix, count);
