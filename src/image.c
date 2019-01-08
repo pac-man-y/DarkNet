@@ -237,6 +237,7 @@ image **load_alphabet()
     return alphabets;
 }
 
+//画图
 void draw_detections(image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes)
 {
     int i,j;
