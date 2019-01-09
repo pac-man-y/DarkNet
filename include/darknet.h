@@ -43,6 +43,7 @@ typedef struct{
     int *group_size;
     int *group_offset;
 } tree;
+
 tree *read_tree(char *filename);
 
 typedef enum{
@@ -57,6 +58,7 @@ typedef enum{
     MULT, ADD, SUB, DIV
 } BINARY_ACTIVATION;
 
+//枚举
 typedef enum {
     CONVOLUTIONAL,
     DECONVOLUTIONAL,
@@ -90,6 +92,7 @@ typedef enum {
     BLANK
 } LAYER_TYPE;
 
+//SSE？加速？
 typedef enum{
     SSE, MASKED, L1, SEG, SMOOTH,WGAN
 } COST_TYPE;
@@ -112,6 +115,8 @@ typedef struct network network;
 struct layer;
 typedef struct layer layer;
 
+
+//
 struct layer{
     LAYER_TYPE type;
     ACTIVATION activation;
