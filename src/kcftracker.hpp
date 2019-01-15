@@ -61,37 +61,37 @@ public:
     // Update position based on the new frame   更新跟踪器，只需要当前帧图像就可以，返回Rect
     virtual cv::Rect update(cv::Mat image);
 
-    float interp_factor; // linear interpolation factor for adaptation
-    float sigma; // gaussian kernel bandwidth
-    float lambda; // regularization
+    float interp_factor; // 线性插值系数linear interpolation factor for adaptation
+    float sigma; // 高斯核系数gaussian kernel bandwidth
+    float lambda; // 正则化系数regularization
     int cell_size; // HOG cell size
     int cell_sizeQ; // cell size^2, to avoid repeated operations
-    float padding; // extra area surrounding the target
-    float output_sigma_factor; // bandwidth of gaussian target
-    int template_size; // template size
-    float scale_step; // scale step for multi-scale estimation
-    float scale_weight;  // to downweight detection scores of other scales for added stability
+    float padding; // padding sz 一般1-2.5extra area surrounding the target
+    float output_sigma_factor; //高斯标签系数bandwidth of gaussian target
+    int template_size; // 当前size（或者是模板sz） template size
+    float scale_step; // 尺度步长 scale step for multi-scale estimation
+    float scale_weight;  // 尺度权重，加强当前选择的权重to downweight detection scores of other scales for added stability
 
 protected:
-    // Detect object in the current frame.
+    // 检测函数 Detect object in the current frame.
     cv::Point2f detect(cv::Mat z, cv::Mat x, float &peak_value);
 
-    // train tracker with a single image
+    // 训练函数 train tracker with a single image
     void train(cv::Mat x, float train_interp_factor);
 
-    // Evaluates a Gaussian kernel with bandwidth SIGMA for all relative shifts between input images X and Y, which must both be MxN. They must    also be periodic (ie., pre-processed with a cosine window).
+    // 高斯相关核函数（核技巧提供可分性） Evaluates a Gaussian kernel with bandwidth SIGMA for all relative shifts between input images X and Y, which must both be MxN. They must    also be periodic (ie., pre-processed with a cosine window).
     cv::Mat gaussianCorrelation(cv::Mat x1, cv::Mat x2);
 
-    // Create Gaussian Peak. Function called only in the first frame.
+    // 创建高斯标签（二维单峰高斯）Create Gaussian Peak. Function called only in the first frame.
     cv::Mat createGaussianPeak(int sizey, int sizex);
 
-    // Obtain sub-window from image, with replication-padding and extract features
+    // 创建子窗口（并获得features？）Obtain sub-window from image, with replication-padding and extract features
     cv::Mat getFeatures(const cv::Mat & image, bool inithann, float scale_adjust = 1.0f);
 
-    // Initialize Hanning window. Function called only in the first frame.
+    // 创建汉明窗，这个是为了减少傅里叶变换的边界效应Initialize Hanning window. Function called only in the first frame.
     void createHanningMats();
 
-    // Calculate sub-pixel peak for one dimension
+    // 这个是获取二维此窗口的一个peak（峰值，也就是说检测的位置应该是）Calculate sub-pixel peak for one dimension
     float subPixelPeak(float left, float center, float right);
 
     cv::Mat _alphaf;
