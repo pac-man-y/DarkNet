@@ -1,7 +1,11 @@
 ## folds###
 backup/
+obj/
 
 ### files
 darknet53.conv.74
 yolov3-tiny.weights
 yolov3.weights
+darknet53
+libdarknet.a
+libdarknet.so

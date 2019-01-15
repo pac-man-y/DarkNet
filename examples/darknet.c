@@ -442,7 +442,11 @@ int main(int argc, char **argv)
         char *outfile = find_char_arg(argc, argv, "-out", 0);
         int fullscreen = find_arg(argc, argv, "-fullscreen");
         test_detector("cfg/coco.data", argv[2], argv[3], filename, thresh, .5, outfile, fullscreen);
-    } else if (0 == strcmp(argv[1], "cifar")){
+    }else if(0 == strcmp(argv[1], "kcf")){
+        printf("hello kcf!!,this is a kcf tracker test code\n");     //这里是我测试加的一个kcf的框架，最终是要加到这里的
+
+    }
+    else if (0 == strcmp(argv[1], "cifar")){
         run_cifar(argc, argv);
     } else if (0 == strcmp(argv[1], "go")){
         run_go(argc, argv);
