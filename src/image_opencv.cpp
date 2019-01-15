@@ -1,114 +1,16 @@
 #ifdef OPENCV
 
+//下面这三个都是为了KCF来的
+#include "ffttools.hpp"    //这个是为了fhog来做傅里叶变换的
+#include "recttools.hpp"
+#include "kcftracker.hpp"
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "opencv2/opencv.hpp"
 #include "image.h"
-#include "opencv2/imgproc/imgproc.hpp"    //这个是为了高FHOG加的
+
 using namespace cv;
-
-
-//-----------------FHOG------------------
-// 为了不修makefile，我就把fhog的一些东西都写在这里了------
-#include "float.h"
-
-typedef struct{
-    int sizeX;
-    int sizeY;
-    int numFeatures;
-    float *map;
-} CvLSVMFeatureMapCaskade;
-
-#define PI    CV_PI
-
-#define EPS 0.000001
-
-#define F_MAX FLT_MAX
-#define F_MIN -FLT_MAX
-
-#define NUM_SECTOR 9
-
-// The number of levels in image resize procedure
-// We need Lambda levels to resize image twice
-#define LAMBDA 10
-
-// Block size. Used in feature pyramid building procedure
-#define SIDE_LENGTH 8
-
-#define VAL_OF_TRUNCATE 0.2f 
-
-
-//modified from "_lsvm_error.h"
-#define LATENT_SVM_OK 0
-#define LATENT_SVM_MEM_NULL 2
-#define DISTANCE_TRANSFORM_OK 1
-#define DISTANCE_TRANSFORM_GET_INTERSECTION_ERROR -1
-#define DISTANCE_TRANSFORM_ERROR -2
-#define DISTANCE_TRANSFORM_EQUAL_POINTS -3
-#define LATENT_SVM_GET_FEATURE_PYRAMID_FAILED -4
-#define LATENT_SVM_SEARCH_OBJECT_FAILED -5
-#define LATENT_SVM_FAILED_SUPERPOSITION -6
-#define FILTER_OUT_OF_BOUNDARIES -7
-#define LATENT_SVM_TBB_SCHEDULE_CREATION_FAILED -8
-#define LATENT_SVM_TBB_NUMTHREADS_NOT_CORRECT -9
-#define FFT_OK 2
-#define FFT_ERROR -10
-#define LSVM_PARSER_FILE_NOT_FOUND -11
-
-/**
- * // Getting feature map for the selected subimage  
- * /
- * // API
- * // int getFeatureMaps(const IplImage * image, const int k, featureMap **map);
- * // INPUT
- * // image             - selected subimage
- * // k                 - size of cells
- * // OUTPUT
- * // map               - feature map
- * // RESULT
- * // Error status
-**/
-
-int getFeatureMaps(const IplImage * image, const int k, CvLSVMFeatureMapCaskade **map);
-/**
- * Feature map Normalization and Truncation 
- * API
- * int normalizationAndTruncationFeatureMaps(featureMap *map, const float alfa);
- * INPUT
- * map               - feature map
- * alfa              - truncation threshold
- * OUTPUT
- * map               - truncated and normalized feature map
- * RESULT
- * Error status
-**/
-int normalizeAndTruncate(CvLSVMFeatureMapCaskade *map, const float alfa);
-
-/**
- * // Feature map reduction
- * // In each cell we reduce dimension of the feature vector
- * // according to original paper special procedure
- * //
- * // API
- * // int PCAFeatureMaps(featureMap *map)
- * // INPUT
- * // map               - feature map
- * // OUTPUT
- * // map               - feature map
- * // RESULT
- * // Error status
-**/
-int PCAFeatureMaps(CvLSVMFeatureMapCaskade *map);
-
-int allocFeatureMapObject(CvLSVMFeatureMapCaskade **obj, const int sizeX, const int sizeY,const int p);
-
-int freeFeatureMapObject (CvLSVMFeatureMapCaskade **obj);
-
-
-
-
-
-//-----------------this is end of KCF_FHOG------------------
 
 
 
