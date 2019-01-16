@@ -112,19 +112,28 @@ inline cv::Rect getBorder(const cv::Rect_<t > &original, cv::Rect_<t > & limited
     return res;
 }
 
+
+//获取subwindows
+/**
+ * const cv::Mat &in      图像，Mat格式
+ * const cv::Rect & window   ROI区域，这就是需要获取的区域了。
+ * int borderType    边界模式，这个是opencv里的宏定义了
+ * 这里面还是包含了一些细节性的东西，等后面需要看这个的话再说吧
+ **/
 inline cv::Mat subwindow(const cv::Mat &in, const cv::Rect & window, int borderType = cv::BORDER_CONSTANT)
 {
-    cv::Rect cutWindow = window;
+    cv::Rect cutWindow = window;  
     RectTools::limit(cutWindow, in.cols, in.rows);
-    if (cutWindow.height <= 0 || cutWindow.width <= 0)assert(0); //return cv::Mat(window.height,window.width,in.type(),0) ;
-    cv::Rect border = RectTools::getBorder(window, cutWindow);
+    //就是防止尺寸小于0，是一些调试用的信息
+    if (cutWindow.height <= 0 || cutWindow.width <= 0)assert(0);   //return cv::Mat(window.height,window.width,in.type(),0) ;
+    cv::Rect border = RectTools::getBorder(window, cutWindow);   //获取border格式
     cv::Mat res = in(cutWindow);
 
-    if (border != cv::Rect(0, 0, 0, 0))
+    if (border != cv::Rect(0, 0, 0, 0))  //不是全0的话才会做这个操作
     {
         cv::copyMakeBorder(res, res, border.y, border.height, border.x, border.width, borderType);
     }
-    return res;
+    return res;   //返回操作
 }
 
 inline cv::Mat getGrayImage(cv::Mat img)

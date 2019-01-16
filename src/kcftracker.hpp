@@ -94,7 +94,7 @@ protected:
     // 这个是获取二维此窗口的一个peak（峰值，也就是说检测的位置应该是）Calculate sub-pixel peak for one dimension
     float subPixelPeak(float left, float center, float right);
 
-    cv::Mat _alphaf;
+    cv::Mat _alphaf;     //就是原式中的alphaf  但是是在频域总的
     cv::Mat _prob;
     cv::Mat _tmpl;
     cv::Mat _num;
@@ -115,27 +115,28 @@ private:
 
 
 
+//跟踪器的构造函数，这个里面实际上是没有做什么实质性的操作和运算，只是初始化了一些参数和flag
 KCFTracker::KCFTracker(bool hog, bool fixed_window, bool multiscale, bool lab)
 {
 
     // Parameters equal in all cases
-    lambda = 0.0001;
+    lambda = 0.0001;     
     padding = 2.5; 
     //output_sigma_factor = 0.1;
     output_sigma_factor = 0.125;
 
 
-    if (hog) {    // HOG
+    if (hog) {    // HOG   如果用hog的话
         // VOT
-        interp_factor = 0.012;
+        interp_factor = 0.012;  
         sigma = 0.6; 
         // TPAMI
         //interp_factor = 0.02;
         //sigma = 0.5; 
-        cell_size = 4;
-        _hogfeatures = true;
+        cell_size = 4;     //hog的cell_size
+        _hogfeatures = true;    //标志位
 
-        /*
+        //lab这个是什么意思？，我确实没有看懂
         if (lab) {
             interp_factor = 0.005;
             sigma = 0.4; 
@@ -146,7 +147,7 @@ KCFTracker::KCFTracker(bool hog, bool fixed_window, bool multiscale, bool lab)
             _labCentroids = cv::Mat(nClusters, 3, CV_32FC1, &dataa);
             cell_sizeQ = cell_size*cell_size;
         }
-        */
+        
             _labfeatures = false;
         
     }
@@ -187,17 +188,17 @@ KCFTracker::KCFTracker(bool hog, bool fixed_window, bool multiscale, bool lab)
 
 
 
-// Initialize tracker 
+//初始化跟踪器，使用ROI和IMAGE  Initialize tracker 
 void KCFTracker::init(const cv::Rect &roi, cv::Mat image)
 {
-    _roi = roi;
-    assert(roi.width >= 0 && roi.height >= 0);
-    _tmpl = getFeatures(image, 1);
-    _prob = createGaussianPeak(size_patch[0], size_patch[1]);
-    _alphaf = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));
+    _roi = roi;       //roi设置
+    assert(roi.width >= 0 && roi.height >= 0);    //长和宽必须都大于0，否则终止程序并报错，主要是调试的时候用
+    _tmpl = getFeatures(image, 1);         //获取特征图
+    _prob = createGaussianPeak(size_patch[0], size_patch[1]);    //创建高斯峰，这个只在第一帧的时候创建
+    _alphaf = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));   //创建alphaf，是32位复数二通道，用0初始化
     //_num = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));
     //_den = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));
-    train(_tmpl, 1.0); // train with initial frame
+    train(_tmpl, 1.0); // train with initial frame     用第一帧来训练
  }
 // Update position based on the new frame
 cv::Rect KCFTracker::update(cv::Mat image)
@@ -371,15 +372,19 @@ cv::Mat KCFTracker::createGaussianPeak(int sizey, int sizex)
 // Obtain sub-window from image, with replication-padding and extract features
 cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scale_adjust)
 {
-    cv::Rect extracted_roi;
+    cv::Rect extracted_roi;   //padding之后的ROI
 
+    //这就是中心点了，然后根据padding来获取subwindow
     float cx = _roi.x + _roi.width / 2;
     float cy = _roi.y + _roi.height / 2;
 
+    // 如果要hann窗的话
     if (inithann) {
+        //
         int padded_w = _roi.width * padding;
-        int padded_h = _roi.height * padding;
+        int padded_h = _roi.height * padding;     
         
+        //尺寸的一些变化
         if (template_size > 1) {  // Fit largest dimension to the given template size
             if (padded_w >= padded_h)  //fit to width
                 _scale = padded_w / (float) template_size;
@@ -389,7 +394,7 @@ cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scal
             _tmpl_sz.width = padded_w / _scale;
             _tmpl_sz.height = padded_h / _scale;
         }
-        else {  //No template size given, use ROI size
+        else {  //No template size given, use ROI size，没有给模板的话就用的是template
             _tmpl_sz.width = padded_w;
             _tmpl_sz.height = padded_h;
             _scale = 1;
@@ -405,33 +410,39 @@ cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scal
                 _scale = 2;
             }*/
         }
-
+        
+        // hog特征
         if (_hogfeatures) {
-            // Round to cell size and also make it even
+            // Round to cell size and also make it even，变成偶数，这个肯定是引入新的数据了，先除以2*cell_size，然后在乘，最后加上cell_size*2
             _tmpl_sz.width = ( ( (int)(_tmpl_sz.width / (2 * cell_size)) ) * 2 * cell_size ) + cell_size*2;
             _tmpl_sz.height = ( ( (int)(_tmpl_sz.height / (2 * cell_size)) ) * 2 * cell_size ) + cell_size*2;
         }
+        //如果不用hog特征的话就直接做了，还是把尺寸变成偶数，使得一些折半计算的操作更简单一些，比如获取一般尺寸的时候
         else {  //Make number of pixels even (helps with some logic involving half-dimensions)
             _tmpl_sz.width = (_tmpl_sz.width / 2) * 2;
             _tmpl_sz.height = (_tmpl_sz.height / 2) * 2;
         }
     }
 
+    //extracted_roi区域的大小，
     extracted_roi.width = scale_adjust * _scale * _tmpl_sz.width;
     extracted_roi.height = scale_adjust * _scale * _tmpl_sz.height;
 
-    // center roi with new size
+    // center roi with new size  新SIZE的中心点
     extracted_roi.x = cx - extracted_roi.width / 2;
     extracted_roi.y = cy - extracted_roi.height / 2;
 
-    cv::Mat FeaturesMap;  
+    cv::Mat FeaturesMap;     //特征图
+    //这里是获取根据extracted_roi和image来从原图中截取subwindow，这个函数在RECTtools头文件里
     cv::Mat z = RectTools::subwindow(image, extracted_roi, cv::BORDER_REPLICATE);
     
+    //如果不等于的话是需要resize的，采取什么样的插值方式就默认的了，这样其实取了很少一部分东西。
     if (z.cols != _tmpl_sz.width || z.rows != _tmpl_sz.height) {
         cv::resize(z, z, _tmpl_sz);
     }   
+    
 
-    // HOG features
+    // HOG features  获取FHOG特征，这个就要FHOG.H里的东西了，这部分应该是最难的，但是可以不看哈哈……
     if (_hogfeatures) {
         IplImage z_ipl = z;
         CvLSVMFeatureMapCaskade *map;
