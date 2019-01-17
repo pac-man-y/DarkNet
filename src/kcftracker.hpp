@@ -444,20 +444,22 @@ cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scal
 
     // HOG features  获取FHOG特征，这个就要FHOG.H里的东西了，这部分应该是最难的，但是可以不看哈哈……
     if (_hogfeatures) {
-        IplImage z_ipl = z;
-        CvLSVMFeatureMapCaskade *map;
+        IplImage z_ipl = z;    //Mat可以直接赋值给IPLIMAGE，看来是可以的
+        CvLSVMFeatureMapCaskade *map;     //包括size，num和一个float的数组，里面存的就是hog的特征
         getFeatureMaps(&z_ipl, cell_size, &map);
-        normalizeAndTruncate(map,0.2f);
-        PCAFeatureMaps(map);
+        normalizeAndTruncate(map,0.2f);    //归一化和截断，这个在Fhog里的论文里也有写，可以参见这里：https://www.jianshu.com/p/69a3e39c51f9
+        PCAFeatureMaps(map);        //PCA降维，本来（9+18)*4个主成分，按照PCA降维之后，会得到27+4一共31维的特征
         size_patch[0] = map->sizeY;
         size_patch[1] = map->sizeX;
         size_patch[2] = map->numFeatures;
+        //这里的numFeatures就应该是31了
 
+        //这里是把每一维的特征当做一行来存储到Mat里，一共是31行，每行有map->sizeX*map->sizeY这么多个数，32维浮点数
         FeaturesMap = cv::Mat(cv::Size(map->numFeatures,map->sizeX*map->sizeY), CV_32F, map->map);  // Procedure do deal with cv::Mat multichannel bug
-        FeaturesMap = FeaturesMap.t();
-        freeFeatureMapObject(&map);
+        FeaturesMap = FeaturesMap.t();    //转置，恩就是这样的
+        freeFeatureMapObject(&map);   //map是C代码，所以这部分的内存需要手动释放
 
-        // Lab features
+        // Lab features 是否需要加上lab特征，这里的意思应该是lab颜色特征
         if (_labfeatures) {
             cv::Mat imgLab;
             cvtColor(z, imgLab, CV_BGR2Lab);
@@ -515,11 +517,11 @@ cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scal
     if (inithann) {
         createHanningMats();
     }
-    FeaturesMap = hann.mul(FeaturesMap);
-    return FeaturesMap;
+    FeaturesMap = hann.mul(FeaturesMap);     //加上汉明窗
+    return FeaturesMap;     //返回
 }
     
-// Initialize Hanning window. Function called only in the first frame.
+// Initialize Hanning window. Function called only in the first frame.汉明窗的创建只在第一帧
 void KCFTracker::createHanningMats()
 {   
     cv::Mat hann1t = cv::Mat(cv::Size(size_patch[1],1), CV_32F, cv::Scalar(0));
