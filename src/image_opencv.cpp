@@ -20,6 +20,11 @@ using namespace cv;
 
 extern "C" {
 
+void kcf_test()
+{
+    printf("this is a kcf test code!!!");
+}
+
 IplImage *image_to_ipl(image im)
 {
     int x,y,c;

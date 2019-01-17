@@ -21,6 +21,8 @@ extern void run_go(int argc, char **argv);
 extern void run_art(int argc, char **argv);
 extern void run_super(int argc, char **argv);
 extern void run_lsd(int argc, char **argv);
+extern void kcf_test();
+
 
 void average(int argc, char *argv[])
 {
@@ -443,7 +445,7 @@ int main(int argc, char **argv)
         int fullscreen = find_arg(argc, argv, "-fullscreen");
         test_detector("cfg/coco.data", argv[2], argv[3], filename, thresh, .5, outfile, fullscreen);
     }else if(0 == strcmp(argv[1], "kcf")){
-        printf("hello kcf!!,this is a kcf tracker test code!!!\n");     //这里是我测试加的一个kcf的框架，最终是要加到这里的
+        kcf_test();     //这里是我测试加的一个kcf的框架，最终是要加到这里的
 
     }
     else if (0 == strcmp(argv[1], "cifar")){
