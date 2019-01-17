@@ -22,7 +22,11 @@ extern "C" {
 
 void kcf_test()
 {
-    printf("this is a kcf test code!!!");
+    printf("this is a kcf test code!!!\n");
+    cv::Mat img=imread("test.jpg");
+    imshow("test",img);
+    waitKey(1000);
+
 }
 
 IplImage *image_to_ipl(image im)
