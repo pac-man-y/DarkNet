@@ -72,7 +72,7 @@ public:
     float scale_step; // 尺度步长 scale step for multi-scale estimation
     float scale_weight;  // 尺度权重，加强当前选择的权重to downweight detection scores of other scales for added stability
 
-protected:
+//protected:
     // 检测函数 Detect object in the current frame.
     cv::Point2f detect(cv::Mat z, cv::Mat x, float &peak_value);
 
@@ -95,8 +95,8 @@ protected:
     float subPixelPeak(float left, float center, float right);
 
     cv::Mat _alphaf;     //就是原式中的alphaf  但是是在频域总的
-    cv::Mat _prob;
-    cv::Mat _tmpl;
+    cv::Mat _prob;       //高斯峰的频域，这个使用createGaussianPeak()来创建的时候最后返回的是做过傅里叶变换的
+    cv::Mat _tmpl;   
     cv::Mat _num;
     cv::Mat _den;
     cv::Mat _labCentroids;

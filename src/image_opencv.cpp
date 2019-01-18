@@ -4,13 +4,14 @@
 #include "ffttools.hpp"    //这个是为了fhog来做傅里叶变换的
 #include "recttools.hpp"
 #include "kcftracker.hpp"
-
+#include <iostream>
 #include "stdio.h"
 #include "stdlib.h"
 #include "opencv2/opencv.hpp"
 #include "image.h"
 
 using namespace cv;
+using namespace std;
 
 
 
@@ -22,10 +23,22 @@ extern "C" {
 
 void kcf_test()
 {
+    VideoCapture video("data_cut.avi");
+    
     printf("this is a kcf test code!!!\n");
     cv::Mat img=imread("test.jpg");
+    KCFTracker tracker(true,true,false,false);    //构造
+    tracker.init(cv::Rect(100,100,100,100),img);  //初始化
+    
     imshow("test",img);
-    waitKey(1000);
+    imshow("tmp",tracker._tmpl);
+
+    //看下hog特征的维度
+    cout<<tracker._tmpl.size()<<endl;       //这个是576*31的维度，每一行是一维的FHOG，一共是31维
+    cout<<tracker._tmpl.channels()<<endl;   //只有一个通道。
+   
+    //imshow("guas",tracker._prob);
+    waitKey(0);
 
 }
 
