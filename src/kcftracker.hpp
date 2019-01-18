@@ -203,6 +203,7 @@ void KCFTracker::init(const cv::Rect &roi, cv::Mat image)
 // Update position based on the new frame
 cv::Rect KCFTracker::update(cv::Mat image)
 {
+    //四个边界条件处理一下，不能越过边界
     if (_roi.x + _roi.width <= 0) _roi.x = -_roi.width + 1;
     if (_roi.y + _roi.height <= 0) _roi.y = -_roi.height + 1;
     if (_roi.x >= image.cols - 1) _roi.x = image.cols - 2;
@@ -212,7 +213,7 @@ cv::Rect KCFTracker::update(cv::Mat image)
     float cy = _roi.y + _roi.height / 2.0f;
 
 
-    float peak_value;
+    float peak_value;   //峰值，当一个返回值去传入，真正的返回值是res(POINT2F)
     cv::Point2f res = detect(_tmpl, getFeatures(image, 0, 1.0f), peak_value);
 
     if (scale_step != 1) {
@@ -260,9 +261,9 @@ cv::Rect KCFTracker::update(cv::Mat image)
 // Detect object in the current frame.
 cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
 {
-    using namespace FFTTools;
+    using namespace FFTTools;    //detect其实也主要做的是这个工作
 
-    cv::Mat k = gaussianCorrelation(x, z);
+    cv::Mat k = gaussianCorrelation(x, z);     //使用核技巧
     cv::Mat res = (real(fftd(complexMultiplication(_alphaf, fftd(k)), true)));
 
     //minMaxLoc only accepts doubles for the peak, and integer points for the coordinates
@@ -312,9 +313,11 @@ void KCFTracker::train(cv::Mat x, float train_interp_factor)
 
 }
 
-// Evaluates a Gaussian kernel with bandwidth SIGMA for all relative shifts between input images X and Y, which must both be MxN. They must    also be periodic (ie., pre-processed with a cosine window).
+// Evaluates a Gaussian kernel with bandwidth SIGMA for all relative shifts between input images X and Y, which must both be MxN. They must also be periodic (ie., pre-processed with a cosine window).
+// 使用核技巧做核相关矩阵，特征图都应该是M*N的，但是FHOG中getfeature返回的是一行，所以这里需要做重新reshape
 cv::Mat KCFTracker::gaussianCorrelation(cv::Mat x1, cv::Mat x2)
 {
+    //做和相关矩阵
     using namespace FFTTools;
     cv::Mat c = cv::Mat( cv::Size(size_patch[1], size_patch[0]), CV_32F, cv::Scalar(0) );
     // HOG features
@@ -322,10 +325,14 @@ cv::Mat KCFTracker::gaussianCorrelation(cv::Mat x1, cv::Mat x2)
         cv::Mat caux;
         cv::Mat x1aux;
         cv::Mat x2aux;
-        for (int i = 0; i < size_patch[2]; i++) {
+        for (int i = 0; i < size_patch[2]; i++)   //size_patch[2]里面存的是numOfFeature
+        {
             x1aux = x1.row(i);   // Procedure do deal with cv::Mat multichannel bug
-            x1aux = x1aux.reshape(1, size_patch[0]);
-            x2aux = x2.row(i).reshape(1, size_patch[0]);
+            x1aux = x1aux.reshape(1, size_patch[0]);   //第i行拿出来
+            x2aux = x2.row(i).reshape(1, size_patch[0]);  //把x2的第i行也拿出来
+            
+            std::cout<<"xlaux_sz:\t"<<x1aux.size()<<std::endl;
+            
             cv::mulSpectrums(fftd(x1aux), fftd(x2aux), caux, 0, true); 
             caux = fftd(caux, true);
             rearrange(caux);
@@ -370,6 +377,7 @@ cv::Mat KCFTracker::createGaussianPeak(int sizey, int sizex)
 }
 
 // Obtain sub-window from image, with replication-padding and extract features
+// 获取子窗口，并返回特征图，31*(sizex*sizey)维度
 cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scale_adjust)
 {
     cv::Rect extracted_roi;   //padding之后的ROI
