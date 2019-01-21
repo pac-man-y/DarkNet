@@ -9,6 +9,7 @@
 #include "stdlib.h"
 #include "opencv2/opencv.hpp"
 #include "image.h"
+#include <string> 
 
 using namespace cv;
 using namespace std;
@@ -23,19 +24,34 @@ extern "C" {
 
 void kcf_test()
 {
-    VideoCapture video("data_cut.avi");
+    string zeros8="00000000";
+    
     
     printf("this is a kcf test code!!!\n");
-    cv::Mat img=imread("test.jpg");
-    KCFTracker tracker(true,true,false,false);    //构造
-    tracker.init(cv::Rect(100,100,100,100),img);  //初始化
-    
-    imshow("test",img);
-    imshow("tmp",tracker._tmpl);
+    cv::Mat img=imread("VOT//00000001.jpg");
 
-    //看下hog特征的维度
-    cout<<tracker._tmpl.size()<<endl;       //这个是576*31的维度，每一行是一维的FHOG，一共是31维
-    cout<<tracker._tmpl.channels()<<endl;   //只有一个通道。
+    KCFTracker tracker(true,true,true,false);    //构造
+    tracker.init(cv::Rect(444,332,48,40),img);  //初始化
+    cv::rectangle(img,cv::Rect(444,332,48,40),cv::Scalar(0,0,255));
+    imshow("lll",img);
+
+    for(int i=2;i<250;i++)
+    {
+        string img_name=zeros8+std::to_string(i);
+        string img_path="VOT//"+string(img_name.end()-8,img_name.end())+".jpg";
+        cv::Mat frame=imread(img_path);
+        
+        
+        cv::Rect res=tracker.update(frame);
+        cv::rectangle(frame,res,cv::Scalar(0,0,255));
+        imshow("test",frame);
+        waitKey(20);
+        cout<<res<<endl;
+
+    }
+
+    
+    
    
     //imshow("guas",tracker._prob);
     waitKey(0);

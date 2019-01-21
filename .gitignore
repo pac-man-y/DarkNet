@@ -1,6 +1,7 @@
 ## folds###
 backup/
 obj/
+VOT/
 
 ### files
 darknet53.conv.74

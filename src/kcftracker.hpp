@@ -331,7 +331,7 @@ cv::Mat KCFTracker::gaussianCorrelation(cv::Mat x1, cv::Mat x2)
             x1aux = x1aux.reshape(1, size_patch[0]);   //第i行拿出来
             x2aux = x2.row(i).reshape(1, size_patch[0]);  //把x2的第i行也拿出来
             
-            std::cout<<"xlaux_sz:\t"<<x1aux.size()<<std::endl;
+            //std::cout<<"xlaux_sz:\t"<<x1aux.size()<<std::endl;
             
             cv::mulSpectrums(fftd(x1aux), fftd(x2aux), caux, 0, true); 
             caux = fftd(caux, true);
@@ -543,7 +543,7 @@ void KCFTracker::createHanningMats()
     cv::Mat hann2d = hann2t * hann1t;
     // HOG features
     if (_hogfeatures) {
-        cv::Mat hann1d = hann2d.reshape(1,1); // Procedure do deal with cv::Mat multichannel bug
+        cv::Mat hann1d = hann2d.reshape(1,1);   // Procedure do deal with cv::Mat multichannel bug
         
         hann = cv::Mat(cv::Size(size_patch[0]*size_patch[1], size_patch[2]), CV_32F, cv::Scalar(0));
         for (int i = 0; i < size_patch[2]; i++) {
