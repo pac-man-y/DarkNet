@@ -115,7 +115,8 @@ cv::Mat fftd(cv::Mat img, bool backwards)
     {
         cv::Mat planes[] = {cv::Mat_<float> (img), cv::Mat_<float>::zeros(img.size())};
         //cv::Mat planes[] = {cv::Mat_<double> (img), cv::Mat_<double>::zeros(img.size())};
-        cv::merge(planes, 2, img);
+        cv::merge(planes, 2, img);   
+        
     }
     cv::dft(img, img, backwards ? (cv::DFT_INVERSE | cv::DFT_SCALE) : 0 );
 
@@ -186,7 +187,7 @@ cv::Mat complexDivision(cv::Mat a, cv::Mat b)
     return res;
 }
 
-void rearrange(cv::Mat &img)
+void rearrange(cv::Mat &img)    //循环移位来交换左上和 右下，右上和左下。
 {
     // img = img(cv::Rect(0, 0, img.cols & -2, img.rows & -2));
     int cx = img.cols / 2;

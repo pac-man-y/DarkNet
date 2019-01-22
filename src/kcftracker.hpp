@@ -201,7 +201,7 @@ void KCFTracker::init(const cv::Rect &roi, cv::Mat image)
     train(_tmpl, 1.0); // train with initial frame     用第一帧来训练
  }
 // Update position based on the new frame
-cv::Rect KCFTracker::update(cv::Mat image)
+cv::Rect KCFTracker::update(cv::Mat image)   
 {
     //四个边界条件处理一下，不能越过边界
     if (_roi.x + _roi.width <= 0) _roi.x = -_roi.width + 1;
@@ -215,6 +215,7 @@ cv::Rect KCFTracker::update(cv::Mat image)
 
     float peak_value;   //峰值，当一个返回值去传入，真正的返回值是res(POINT2F)
     cv::Point2f res = detect(_tmpl, getFeatures(image, 0, 1.0f), peak_value);
+    //得到脱靶量，这个是从FHOG的得来的，所以整体的空间分辨率是下降的
 
     if (scale_step != 1) {
         // Test at a smaller _scale
@@ -263,18 +264,28 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
 {
     using namespace FFTTools;    //detect其实也主要做的是这个工作
 
-    cv::Mat k = gaussianCorrelation(x, z);     //使用核技巧
-    cv::Mat res = (real(fftd(complexMultiplication(_alphaf, fftd(k)), true)));
+    cv::Mat k = gaussianCorrelation(x, z);     //使用核技巧得到K
+    
+
+    //----------改成了3行，为了后面做频域插值方便一些
+    cv::Mat res_tmp_=complexMultiplication(_alphaf, fftd(k));
+    cv::Mat res_tmp=fftd(res_tmp_,true);
+    cv::Mat res=real(res_tmp);
+    //std::cout<<res.size()<<std::endl;
+
+    //我把这里的一行代码改成了上面的三行，为了做频域插值方便。
+    //cv::Mat res = (real(fftd(complexMultiplication(_alphaf, fftd(k)), true)));   
 
     //minMaxLoc only accepts doubles for the peak, and integer points for the coordinates
     cv::Point2i pi;
     double pv;
-    cv::minMaxLoc(res, NULL, &pv, NULL, &pi);
+    cv::minMaxLoc(res, NULL, &pv, NULL, &pi);    //获取最大值以及最大值所在的位置
     peak_value = (float) pv;
 
     //subpixel peak estimation, coordinates will be non-integer
     cv::Point2f p((float)pi.x, (float)pi.y);
 
+    //这两个是处理一下超过边界的情况
     if (pi.x > 0 && pi.x < res.cols-1) {
         p.x += subPixelPeak(res.at<float>(pi.y, pi.x-1), peak_value, res.at<float>(pi.y, pi.x+1));
     }
@@ -283,8 +294,12 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
         p.y += subPixelPeak(res.at<float>(pi.y-1, pi.x), peak_value, res.at<float>(pi.y+1, pi.x));
     }
 
+
+
+    //这个是得到脱靶量的相对值
     p.x -= (res.cols) / 2;
     p.y -= (res.rows) / 2;
+
 
     return p;
 }
@@ -294,12 +309,12 @@ void KCFTracker::train(cv::Mat x, float train_interp_factor)
 {
     using namespace FFTTools;
 
-    cv::Mat k = gaussianCorrelation(x, x);
-    cv::Mat alphaf = complexDivision(_prob, (fftd(k) + lambda));
+    cv::Mat k = gaussianCorrelation(x, x);   //得到K，
+    cv::Mat alphaf = complexDivision(_prob, (fftd(k) + lambda));   //训练
     
     _tmpl = (1 - train_interp_factor) * _tmpl + (train_interp_factor) * x;
     _alphaf = (1 - train_interp_factor) * _alphaf + (train_interp_factor) * alphaf;
-
+   //模型插值
 
     /*cv::Mat kf = fftd(gaussianCorrelation(x, x));
     cv::Mat num = complexMultiplication(kf, _prob);
@@ -325,11 +340,13 @@ cv::Mat KCFTracker::gaussianCorrelation(cv::Mat x1, cv::Mat x2)
         cv::Mat caux;
         cv::Mat x1aux;
         cv::Mat x2aux;
+        //这里是在计算公式中的交叉项。
         for (int i = 0; i < size_patch[2]; i++)   //size_patch[2]里面存的是numOfFeature
         {
             x1aux = x1.row(i);   // Procedure do deal with cv::Mat multichannel bug
+            //这些cout都是为了调试用的
             //std::cout<<x1aux.size()<<std::endl;
-            std::cout<<size_patch[0]<<std::endl;
+            //std::cout<<size_patch[0]<<std::endl;
             x1aux = x1aux.reshape(1, size_patch[0]);   //第i行拿出来
             x2aux = x2.row(i).reshape(1, size_patch[0]);  //把x2的第i行也拿出来
             
@@ -337,26 +354,29 @@ cv::Mat KCFTracker::gaussianCorrelation(cv::Mat x1, cv::Mat x2)
 
            
 
-            cv::mulSpectrums(fftd(x1aux), fftd(x2aux), caux, 0, true); 
-            caux = fftd(caux, true);
-            rearrange(caux);
-            caux.convertTo(caux,CV_32F);
-            c = c + real(caux);
+            cv::mulSpectrums(fftd(x1aux), fftd(x2aux), caux, 0, true);    //频域做点乘
+            caux = fftd(caux, true);     //傅里叶逆变换
+            rearrange(caux);             //循环移位（circle shift）
+            caux.convertTo(caux,CV_32F);   //转换成CV_32F形式
+ 
+            c = c + real(caux);       //把实部加起来，31维的特征进行融合，这是KCF融合多维特征的通用做法。  
         }
     }
-    // Gray features
+    // Gray features   如果是灰度特征的话就非常简单了，只需要做一步
     else {
         cv::mulSpectrums(fftd(x1), fftd(x2), c, 0, true);
         c = fftd(c, true);
         rearrange(c);
         c = real(c);
     }
+
     cv::Mat d; 
+    //这个算的是后面的max的那一项。因为这里特诊图存的是二维矩阵，反而要简单一些，这里直接做就可以了
     cv::max(( (cv::sum(x1.mul(x1))[0] + cv::sum(x2.mul(x2))[0])- 2. * c) / (size_patch[0]*size_patch[1]*size_patch[2]) , 0, d);
 
     cv::Mat k;
-    cv::exp((-d / (sigma * sigma)), k);
-    return k;
+    cv::exp((-d / (sigma * sigma)), k);    //执行前面的exp。
+    return k;      //这个就是空间域的而不是频域的返回值
 }
 
 // Create Gaussian Peak. Function called only in the first frame.
