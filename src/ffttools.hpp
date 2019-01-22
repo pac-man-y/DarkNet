@@ -60,6 +60,7 @@ void rearrange(cv::Mat &img);
 void normalizedLogTransform(cv::Mat &img);
 
 
+//虽然是在这个文件夹里，但是实际上这里的dft都改成用opencv里的DFT来做了，是做了优化的，所以速度并不慢！！
 cv::Mat fftd(cv::Mat img, bool backwards)
 {
 /*

@@ -328,11 +328,15 @@ cv::Mat KCFTracker::gaussianCorrelation(cv::Mat x1, cv::Mat x2)
         for (int i = 0; i < size_patch[2]; i++)   //size_patch[2]里面存的是numOfFeature
         {
             x1aux = x1.row(i);   // Procedure do deal with cv::Mat multichannel bug
+            //std::cout<<x1aux.size()<<std::endl;
+            std::cout<<size_patch[0]<<std::endl;
             x1aux = x1aux.reshape(1, size_patch[0]);   //第i行拿出来
             x2aux = x2.row(i).reshape(1, size_patch[0]);  //把x2的第i行也拿出来
             
-            //std::cout<<"xlaux_sz:\t"<<x1aux.size()<<std::endl;
-            
+            //std::cout<<"x1aux_sz:\t"<<x1aux.size()<<std::endl;  
+
+           
+
             cv::mulSpectrums(fftd(x1aux), fftd(x2aux), caux, 0, true); 
             caux = fftd(caux, true);
             rearrange(caux);
