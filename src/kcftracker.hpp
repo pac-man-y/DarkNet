@@ -121,7 +121,8 @@ KCFTracker::KCFTracker(bool hog, bool fixed_window, bool multiscale, bool lab)
 
     // Parameters equal in all cases
     lambda = 0.0001;     
-    padding = 2.5; 
+    padding = 1.5; 
+    std::cout<<"padding\t"<<padding<<std::endl;
     //output_sigma_factor = 0.1;
     output_sigma_factor = 0.125;
 
@@ -271,8 +272,8 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
     cv::Mat res_tmp_=complexMultiplication(_alphaf, fftd(k));
     cv::Mat res_tmp=fftd(res_tmp_,true);
     cv::Mat res=real(res_tmp);
-    //std::cout<<res.size()<<std::endl;
-
+    
+    
     //我把这里的一行代码改成了上面的三行，为了做频域插值方便。
     //cv::Mat res = (real(fftd(complexMultiplication(_alphaf, fftd(k)), true)));   
 
@@ -280,6 +281,36 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
     cv::Point2i pi;
     double pv;
     cv::minMaxLoc(res, NULL, &pv, NULL, &pi);    //获取最大值以及最大值所在的位置
+
+    /*下面这一段为了计算PSR:
+    As mentioned before a simple measurement of peak
+    strength is called the Peak to Sidelobe Ratio (PSR). To
+    compute the PSR the correlation output g is split into the
+    peak which is the maximum value and the sidelobe which
+    is the rest of the pixels excluding an 11 × 11 window
+    around the peak. The PSR is then defined as
+    $\frac {g_{max}-\mu_{s1}}{\sigma_{s1}}$
+    where gmax is the peak values and µsl and σsl are the
+    mean and standard deviation of the sidelobe.*/
+    if(pi.x-5>=0&&pi.x+5<=res.cols-1&&pi.y-5>=0&&pi.y+5<=res.rows-1)
+    {
+        cv::Mat s1=res(cv::Rect(pi.x-5,pi.y-5,11,11));
+        cv::Scalar mean;
+        cv::Scalar dev;
+        cv::meanStdDev(s1,mean,dev);
+        double PSR=(pv-mean[0])/dev[0];
+        /*
+        std::cout<<"mean:\t"<<mean<<std::endl;
+        std::cout<<"dev:\t"<<dev<<std::endl;
+        std::cout<<"PSR\t"<<PSR<<std::endl;
+        */
+
+    }
+
+
+
+    
+
     peak_value = (float) pv;
 
     //subpixel peak estimation, coordinates will be non-integer

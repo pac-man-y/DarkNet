@@ -535,4 +535,4 @@ int freeFeatureMapObject (CvLSVMFeatureMapCaskade **obj)
 }
 
 //-----------原先fhog.cpp里的内容，这里是结束-----------------
-//-----------------this is end of KCF_FHOG------------------
+//-----------------this is end of KCF_FHOG----------------

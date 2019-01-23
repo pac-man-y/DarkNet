@@ -30,8 +30,8 @@ void kcf_test()
     printf("this is a kcf test code!!!\n");
     cv::Mat img=imread("VOT//00000001.jpg");
 
-    KCFTracker tracker(true,true,true,true);    //构造
-    tracker.init(cv::Rect(444,332,48,40),img);  //初始化
+    KCFTracker tracker(true,true,false,false);    //构造
+    tracker.init(cv::Rect(444,332,10,10),img);  //初始化
     cv::rectangle(img,cv::Rect(444,332,48,40),cv::Scalar(0,0,255));
     imshow("lll",img);
     double all_time=0;
@@ -47,7 +47,7 @@ void kcf_test()
         double time=((double)getTickCount()-start)/getTickFrequency();
         all_time+=time;
         //cout<<"fps\t"<<1./time<<endl;
-        cout<<"ave_fps:\t"<<double(i-1)/all_time<<endl;
+        //cout<<"ave_fps:\t"<<double(i-1)/all_time<<endl;
         cv::rectangle(frame,res,cv::Scalar(0,0,255));
         imshow("test",frame);
         waitKey(20);
