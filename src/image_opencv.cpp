@@ -10,9 +10,87 @@
 #include "opencv2/opencv.hpp"
 #include "image.h"
 #include <string> 
+#include <vector>    //存取groundtruth信息
+#include <fstream>
 
 using namespace cv;
 using namespace std;
+
+
+
+cv::Rect split_line(string &line);   //分离字符串函数声明
+//读取groundtruth信息
+vector<cv::Rect> read_groundtruth(const string &groundtruth_txt,int &num_of_line)    //const常量才可以由字符串隐式转换
+{
+    vector<cv::Rect> groundtruth;            // vector<rect>  用来存groundtruth
+    ifstream groundtruth_file;               // 文件对象
+    groundtruth_file.open(groundtruth_txt);      //打开txt文件
+    string line;         //当前行
+    Rect rect_tmp;       //每一行搞成一个rect
+    while(getline(groundtruth_file,line))
+    {
+        rect_tmp=split_line(line);    //分解字符串为RECT
+        groundtruth.push_back(rect_tmp);    //压入vector
+        num_of_line++;     
+    }
+    return groundtruth;
+}
+
+cv::Rect split_line(string &line)
+{
+    double pos[8];            //八个点
+    int index=0;              //点的索引
+    string tmp;               //暂存的string，来转换为double
+    tmp.clear();              //清零
+    for(auto l:line)          //遍历字符串，这里面是一个比较简单的字符串根据特定字符分离的一个算法
+    {
+        if(l==',')
+        {
+            pos[index]=stod(tmp);
+            index++;
+            tmp.clear();     //一定要记得清零
+        }
+        else
+        {
+            tmp+=l;
+        }
+    }
+    pos[index]=stod(tmp);    //处理最后一个
+    //四个点，对应矩形的四个点
+
+    /* 我后来发现标注的点并不是遵循这样的规律，不一定一开始是左上角的点，这取决于当时标注的
+    人先从哪个点开始点的，所以应该来使用坐标之间的大小关系来确定到底是哪个点
+    cv::Point2f up_left(pos[0],pos[1]);
+    cv::Point2f up_right(pos[2],pos[3]);
+    cv::Point2f down_right(pos[4],pos[5]);
+    cv::Point2f down_left(pos[6],pos[7]);
+    //cout<<up_left<<" "<<up_right<<" "<<down_right<<" "<<down_left<<endl;
+
+
+    int x=round(up_left.x);
+    int y=round(up_left.y);
+    int weidth=round(down_right.x-up_left.x);
+    int height=round(down_right.y-up_left.y);
+    cv::Rect res(x,y,weidth,height);
+    */
+
+   double xmin=min(pos[0],min(min(pos[2],pos[4]),pos[6]));
+   double ymin=min(pos[1],min(min(pos[3],pos[5]),pos[7]));
+   double xmax=max(pos[0],max(max(pos[2],pos[4]),pos[6]));
+   double ymax=max(pos[1],max(max(pos[3],pos[5]),pos[7]));
+
+   cv::Rect res(xmin,ymin,xmax-xmin,ymax-ymin);
+   cout<<res<<endl;
+
+
+
+    
+    //根据四个点来生成Rect对象，只用到对角两个点就够了。
+    return res;
+}
+
+
+
 
 
 
@@ -22,16 +100,23 @@ using namespace std;
 
 extern "C" {
 
+
+
+
 void kcf_test()
 {
+    int num_of_line=0;
+    vector<cv::Rect> res=read_groundtruth("VOT//aa//groundtruth.txt",num_of_line);
+   
+
+    /*
     string zeros8="00000000";
     
-    
     printf("this is a kcf test code!!!\n");
-    cv::Mat img=imread("VOT//00000001.jpg");
+    cv::Mat img=imread("VOT//car1//00000001.jpg");
 
     KCFTracker tracker(true,true,false,false);    //构造
-    tracker.init(cv::Rect(444,332,10,10),img);  //初始化
+    tracker.init(cv::Rect(444,332,48,4e0),img);  //初始化
     cv::rectangle(img,cv::Rect(444,332,48,40),cv::Scalar(0,0,255));
     imshow("lll",img);
     double all_time=0;
@@ -39,7 +124,7 @@ void kcf_test()
     for(int i=2;i<250;i++)
     {
         string img_name=zeros8+std::to_string(i);
-        string img_path="VOT//"+string(img_name.end()-8,img_name.end())+".jpg";
+        string img_path="VOT//car1//"+string(img_name.end()-8,img_name.end())+".jpg";
         
         cv::Mat frame=imread(img_path);  
         double start=static_cast<double>(getTickCount());
@@ -51,15 +136,8 @@ void kcf_test()
         cv::rectangle(frame,res,cv::Scalar(0,0,255));
         imshow("test",frame);
         waitKey(20);
-        
-
     }
-
-    
-    
-   
-    //imshow("guas",tracker._prob);
-    waitKey(0);
+    */
 
 }
 

@@ -1,5 +1,6 @@
 //---this is the start of fhog--------------FHOG------------------
-// 为了不修makefile，我就把fhog的一些东西都写在这里了------
+// 为了不修makefile，我就把fhog.cpp的一些东西都写在这里了,不过这个fhog得到的特征图的大小好
+//像和我以前看的不太一样啊，不知道是不是做了一些优化什么的，还得自习看看代码
 #pragma once
 
 #include "float.h"
