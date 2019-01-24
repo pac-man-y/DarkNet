@@ -303,8 +303,9 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
         /*
         std::cout<<"mean:\t"<<mean<<std::endl;
         std::cout<<"dev:\t"<<dev<<std::endl;
-        std::cout<<"PSR\t"<<PSR<<std::endl;
         */
+        std::cout<<"PSR\t"<<PSR<<std::endl;
+       
 
     }
 
@@ -572,7 +573,7 @@ cv::Mat KCFTracker::getFeatures(const cv::Mat & image, bool inithann, float scal
     }
     else {
         FeaturesMap = RectTools::getGrayImage(z);
-        FeaturesMap -= (float) 0.5; // In Paper;
+        FeaturesMap -= (float) 0.5; // In Paper;中心化
         size_patch[0] = z.rows;
         size_patch[1] = z.cols;
         size_patch[2] = 1;  

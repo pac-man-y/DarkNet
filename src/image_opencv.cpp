@@ -90,10 +90,6 @@ cv::Rect split_line(string &line)
 
 
 
-
-
-
-
 extern "C" {
 
 
@@ -103,23 +99,28 @@ void kcf_test()
 {
     printf("this is a kcf test code!!!\n");
     int num_of_line=0;  
-    vector<cv::Rect> groundtruth=read_groundtruth("VOT//car1//groundtruth.txt",num_of_line);
+    string path="VOT//car1//";
+    
+    //读取groundtruth信息
+    vector<cv::Rect> groundtruth=read_groundtruth(path+"groundtruth.txt",num_of_line);
+
     vector<cv::Rect> track_res;
     track_res.push_back(groundtruth[0]);
    
     string zeros8="00000000";
-    cv::Mat img=imread("VOT//car1//00000001.jpg");
-
+    cv::Mat img=imread(path+"00000001.jpg");
+    imshow("img",img);
+    double all_time=0;
     KCFTracker tracker(true,true,false,false);    //构造
     tracker.init(groundtruth[0],img);      //初始化
     cv::rectangle(img,groundtruth[0],cv::Scalar(0,0,255));   //第一帧画框
-    imshow("img",img);
-    double all_time=0;
+    
+   
 
     for(int i=2;i<num_of_line;i++)
     {
         string img_name=zeros8+std::to_string(i);
-        string img_path="VOT//car1//"+string(img_name.end()-8,img_name.end())+".jpg";
+        string img_path=path+string(img_name.end()-8,img_name.end())+".jpg";
         
         cv::Mat frame=imread(img_path);    
         double start=static_cast<double>(getTickCount());
@@ -128,7 +129,7 @@ void kcf_test()
         groundtruth.push_back(res);
         all_time+=time;
         //cout<<"fps\t"<<1./time<<endl;
-        //cout<<"ave_fps:\t"<<double(i-1)/all_time<<endl;
+        cout<<"ave_fps:\t"<<double(i-1)/all_time<<endl;
         cv::rectangle(frame,res,cv::Scalar(0,0,255));
         imshow("test",frame);
         waitKey(20);
