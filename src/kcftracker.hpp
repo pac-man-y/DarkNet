@@ -121,7 +121,7 @@ KCFTracker::KCFTracker(bool hog, bool fixed_window, bool multiscale, bool lab)
 
     // Parameters equal in all cases
     lambda = 0.0001;     
-    padding = 1.5; 
+    padding = 2.5; 
     std::cout<<"padding\t"<<padding<<std::endl;
     //output_sigma_factor = 0.1;
     output_sigma_factor = 0.125;
@@ -195,6 +195,7 @@ void KCFTracker::init(const cv::Rect &roi, cv::Mat image)
     _roi = roi;       //roi设置
     assert(roi.width >= 0 && roi.height >= 0);    //长和宽必须都大于0，否则终止程序并报错，主要是调试的时候用
     _tmpl = getFeatures(image, 1);         //获取特征图
+    std::cout<<size_patch[0]<<"*"<<size_patch[1]<<std::endl;
     _prob = createGaussianPeak(size_patch[0], size_patch[1]);    //创建高斯峰，这个只在第一帧的时候创建
     _alphaf = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));   //创建alphaf，是32位复数二通道，用0初始化
     //_num = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));

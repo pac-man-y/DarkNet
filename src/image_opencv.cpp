@@ -80,12 +80,8 @@ cv::Rect split_line(string &line)
    double ymax=max(pos[1],max(max(pos[3],pos[5]),pos[7]));
 
    cv::Rect res(xmin,ymin,xmax-xmin,ymax-ymin);
-   cout<<res<<endl;
-
-
-
+   //cout<<res<<endl;
     
-    //根据四个点来生成Rect对象，只用到对角两个点就够了。
     return res;
 }
 
@@ -105,31 +101,31 @@ extern "C" {
 
 void kcf_test()
 {
-    int num_of_line=0;
-    vector<cv::Rect> res=read_groundtruth("VOT//aa//groundtruth.txt",num_of_line);
-   
-
-    /*
-    string zeros8="00000000";
-    
     printf("this is a kcf test code!!!\n");
+    int num_of_line=0;  
+    vector<cv::Rect> groundtruth=read_groundtruth("VOT//car1//groundtruth.txt",num_of_line);
+    vector<cv::Rect> track_res;
+    track_res.push_back(groundtruth[0]);
+   
+    string zeros8="00000000";
     cv::Mat img=imread("VOT//car1//00000001.jpg");
 
     KCFTracker tracker(true,true,false,false);    //构造
-    tracker.init(cv::Rect(444,332,48,4e0),img);  //初始化
-    cv::rectangle(img,cv::Rect(444,332,48,40),cv::Scalar(0,0,255));
-    imshow("lll",img);
+    tracker.init(groundtruth[0],img);      //初始化
+    cv::rectangle(img,groundtruth[0],cv::Scalar(0,0,255));   //第一帧画框
+    imshow("img",img);
     double all_time=0;
 
-    for(int i=2;i<250;i++)
+    for(int i=2;i<num_of_line;i++)
     {
         string img_name=zeros8+std::to_string(i);
         string img_path="VOT//car1//"+string(img_name.end()-8,img_name.end())+".jpg";
         
-        cv::Mat frame=imread(img_path);  
+        cv::Mat frame=imread(img_path);    
         double start=static_cast<double>(getTickCount());
         cv::Rect res=tracker.update(frame);
         double time=((double)getTickCount()-start)/getTickFrequency();
+        groundtruth.push_back(res);
         all_time+=time;
         //cout<<"fps\t"<<1./time<<endl;
         //cout<<"ave_fps:\t"<<double(i-1)/all_time<<endl;
@@ -137,7 +133,7 @@ void kcf_test()
         imshow("test",frame);
         waitKey(20);
     }
-    */
+    
 
 }
 
