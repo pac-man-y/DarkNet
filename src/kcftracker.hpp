@@ -71,8 +71,8 @@ public:
     int template_size; // 当前size（或者是模板sz） template size
     float scale_step; // 尺度步长 scale step for multi-scale estimation
     float scale_weight;  // 尺度权重，加强当前选择的权重to downweight detection scores of other scales for added stability
-
-//protected:
+    float PSR;
+protected:
     // 检测函数 Detect object in the current frame.
     cv::Point2f detect(cv::Mat z, cv::Mat x, float &peak_value);
 
@@ -293,21 +293,22 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
     $\frac {g_{max}-\mu_{s1}}{\sigma_{s1}}$
     where gmax is the peak values and µsl and σsl are the
     mean and standard deviation of the sidelobe.*/
+    cv::Mat s1;
     if(pi.x-5>=0&&pi.x+5<=res.cols-1&&pi.y-5>=0&&pi.y+5<=res.rows-1)
     {
-        cv::Mat s1=res(cv::Rect(pi.x-5,pi.y-5,11,11));
-        cv::Scalar mean;
-        cv::Scalar dev;
-        cv::meanStdDev(s1,mean,dev);
-        double PSR=(pv-mean[0])/dev[0];
+        s1=res(cv::Rect(pi.x-5,pi.y-5,11,11));
+    } 
+    else 
+        s1=res;
+
+    cv::Scalar mean;
+    cv::Scalar dev;
+    cv::meanStdDev(s1,mean,dev);
+    this->PSR=(pv-mean[0])/dev[0];
         /*
         std::cout<<"mean:\t"<<mean<<std::endl;
         std::cout<<"dev:\t"<<dev<<std::endl;
         */
-        std::cout<<"PSR\t"<<PSR<<std::endl;
-       
-
-    }
 
 
 

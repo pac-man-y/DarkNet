@@ -2,6 +2,7 @@
 backup/
 obj/
 VOT/
+vot2015/
 
 ### files
 darknet53.conv.74

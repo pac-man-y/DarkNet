@@ -33,6 +33,7 @@ vector<cv::Rect> read_groundtruth(const string &groundtruth_txt,int &num_of_line
         groundtruth.push_back(rect_tmp);    //压入vector
         num_of_line++;     
     }
+    groundtruth_file.close();
     return groundtruth;
 }
 
@@ -85,6 +86,21 @@ cv::Rect split_line(string &line)
     return res;
 }
 
+// 读取list列表的信息
+vector<string> read_list(const string &list_name)
+{
+    vector<string> list_mes;
+    ifstream list(list_name);
+    string line;
+    while(getline(list,line))   //读取list列表信息
+    {
+        //cout<<line<<endl;
+        list_mes.push_back(line);
+    }
+    list.close();
+    return list_mes;
+}
+
 
 
 
@@ -93,46 +109,83 @@ cv::Rect split_line(string &line)
 extern "C" {
 
 
-
-
 void kcf_test()
 {
     printf("this is a kcf test code!!!\n");
-    int num_of_line=0;  
-    string path="VOT//car1//";
-    
-    //读取groundtruth信息
-    vector<cv::Rect> groundtruth=read_groundtruth(path+"groundtruth.txt",num_of_line);
+    vector<string> list=read_list("vot2015//list.txt");
 
-    vector<cv::Rect> track_res;
-    track_res.push_back(groundtruth[0]);
-   
-    string zeros8="00000000";
-    cv::Mat img=imread(path+"00000001.jpg");
-    imshow("img",img);
-    double all_time=0;
-    KCFTracker tracker(true,true,false,false);    //构造
-    tracker.init(groundtruth[0],img);      //初始化
-    cv::rectangle(img,groundtruth[0],cv::Scalar(0,0,255));   //第一帧画框
-    
-   
-
-    for(int i=2;i<num_of_line;i++)
+    for(int i=0;i<list.size();i++)
     {
-        string img_name=zeros8+std::to_string(i);
-        string img_path=path+string(img_name.end()-8,img_name.end())+".jpg";
+
+        cout<<"this is the VOT tracking test!!"<<endl;
+        cout<<"and this is "<<list[i]<<endl;
+
+        ofstream res_ground("results//votresults//"+list[i]+"_res_ground.txt");
+        ofstream res_tracking("results//votresults//"+list[i]+"_res_tracking.txt");
+        ofstream PSR_tracking("results//votresults//"+list[i]+"_PSR.txt");
+        ofstream ave_fps("results//votresults//"+list[i]+"_avefps.txt"); 
+
+        //表头
+        res_ground<<"frame\tx\ty\twidth\theight\n";
+        res_tracking<<"frame\tx\ty\twidth\theight\n";
+        PSR_tracking<<"frame\tPSR\n";
+        ave_fps<<"frame\tave_fps\n";
+
+        string path="vot2015//"+list[i]+"//";      //当前图片路径
+        cout<<path<<endl;
+
+        int num_of_line=0;   //图片数量
+       
         
-        cv::Mat frame=imread(img_path);    
-        double start=static_cast<double>(getTickCount());
-        cv::Rect res=tracker.update(frame);
-        double time=((double)getTickCount()-start)/getTickFrequency();
-        groundtruth.push_back(res);
-        all_time+=time;
-        //cout<<"fps\t"<<1./time<<endl;
-        cout<<"ave_fps:\t"<<double(i-1)/all_time<<endl;
-        cv::rectangle(frame,res,cv::Scalar(0,0,255));
-        imshow("test",frame);
-        waitKey(20);
+        //读取groundtruth信息
+        vector<cv::Rect> groundtruth=read_groundtruth(path+"groundtruth.txt",num_of_line);
+    
+        int index=1;
+        for(auto gg:groundtruth)
+        {
+            
+            res_ground<<index++<<"\t"<<gg.x<<"\t"<<gg.y<<"\t"<<gg.width<<"\t"<<gg.height<<"\n";
+        }
+        res_ground.close();      //关闭txt文件
+        
+        //跟踪结果保存的vector
+        vector<cv::Rect> track_res;
+        track_res.push_back(groundtruth[0]);
+    
+        //读取第一张图片并初始化跟踪器
+        string zeros8="00000000";
+        cv::Mat img=imread(path+"00000001.jpg");
+        imshow("img",img);
+        double all_time=0;
+        KCFTracker tracker(true,true,true,false);    //构造
+        tracker.init(groundtruth[0],img);      //初始化
+        cv::rectangle(img,groundtruth[0],cv::Scalar(0,0,255));   //第一帧画框
+        
+        for(int j=2;j<num_of_line;j++)
+        {
+            string img_name=zeros8+std::to_string(j);
+            string img_path=path+string(img_name.end()-8,img_name.end())+".jpg";
+            
+            cv::Mat frame=imread(img_path);    
+            double start=static_cast<double>(getTickCount());
+            cv::Rect res=tracker.update(frame);
+            double time=((double)getTickCount()-start)/getTickFrequency();
+            groundtruth.push_back(res);
+            all_time+=time;
+
+            //跟踪的主要参数都记录下来
+            res_tracking<<j<<"\t"<<res.x<<"\t"<<res.y<<"\t"<<res.width<<"\t"<<res.height<<"\n";    //跟踪结果，
+            PSR_tracking<<j<<"\t"<<tracker.PSR<<"\n";
+            ave_fps<<j<<"\t"<<double(j-1)/all_time<<"\n";
+
+
+            
+            //cout<<"fps\t"<<1./time<<endl;
+            //cout<<"ave_fps:\t"<<double(i-1)/all_time<<endl;
+            cv::rectangle(frame,res,cv::Scalar(0,0,255));
+            //imshow("test",frame);
+            //waitKey(20);
+        }
     }
     
 
