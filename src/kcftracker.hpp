@@ -53,7 +53,7 @@ class KCFTracker : public Tracker
 {
 public:
     // Constructor  构造函数
-    KCFTracker(bool hog = true, bool fixed_window = true, bool multiscale = true, bool lab = true);
+    KCFTracker(bool hog = true, bool fixed_window = true, bool multiscale = true, bool interpolation=false,bool lab = true);
 
     // Initialize tracker   初始化跟踪器
     virtual void init(const cv::Rect &roi, cv::Mat image);
@@ -72,6 +72,7 @@ public:
     float scale_step; // 尺度步长 scale step for multi-scale estimation
     float scale_weight;  // 尺度权重，加强当前选择的权重to downweight detection scores of other scales for added stability
     float PSR;
+    bool interpolation;
 protected:
     // 检测函数 Detect object in the current frame.
     cv::Point2f detect(cv::Mat z, cv::Mat x, float &peak_value);
@@ -116,12 +117,15 @@ private:
 
 
 //跟踪器的构造函数，这个里面实际上是没有做什么实质性的操作和运算，只是初始化了一些参数和flag
-KCFTracker::KCFTracker(bool hog, bool fixed_window, bool multiscale, bool lab)
+//我加了一个是否进行频域插值的flag
+KCFTracker::KCFTracker(bool hog, bool fixed_window, bool multiscale,bool interpolation, bool lab)
 {
 
+    this->interpolation=interpolation;
     // Parameters equal in all cases
+
     lambda = 0.0001;     
-    padding = 2.5; 
+    padding = 2; 
     std::cout<<"padding\t"<<padding<<std::endl;
     //output_sigma_factor = 0.1;
     output_sigma_factor = 0.125;
@@ -271,8 +275,28 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
 
     //----------改成了3行，为了后面做频域插值方便一些
     cv::Mat res_tmp_=complexMultiplication(_alphaf, fftd(k));
-    cv::Mat res_tmp=fftd(res_tmp_,true);
+    cv::Mat response;
+
+    if(this->interpolation)   //如果进行插值的话,下面就进行插值，当然插值的极大值的脱靶量就不用×scale系数了。
+    {
+        cv::Size sz=res_tmp_.size();
+        int width=sz.width/2;
+        int height=sz.height/2;
+
+        response=cv::Mat::zeros(cv::Size(8*width, 8*height), res_tmp_.type());
+        
+        res_tmp_(cv::Rect(0, 0, width, height)).copyTo(response(cv::Rect(0, 0, width, height)));
+        res_tmp_(cv::Rect(width, 0, width, height)).copyTo(response(cv::Rect(7*width, 0, width, height)));
+        res_tmp_(cv::Rect(0, height, width, height)).copyTo(response(cv::Rect(0, height*7, width, height)));
+        res_tmp_(cv::Rect(width, height, width, height)).copyTo(response(cv::Rect(7 * width, height * 7, width, height)));
+    }
+    else response=res_tmp_;
+
+    
+
+    cv::Mat res_tmp=fftd(response,true);
     cv::Mat res=real(res_tmp);
+    std::cout<<res.size()<<std::endl;
     
     
     //我把这里的一行代码改成了上面的三行，为了做频域插值方便。
@@ -310,10 +334,6 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
         std::cout<<"dev:\t"<<dev<<std::endl;
         */
 
-
-
-    
-
     peak_value = (float) pv;
 
     //subpixel peak estimation, coordinates will be non-integer
@@ -333,6 +353,7 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
     //这个是得到脱靶量的相对值
     p.x -= (res.cols) / 2;
     p.y -= (res.rows) / 2;
+    std::cout<<"drift\t"<<p.x<<", "<<p.y<<std::endl;
 
 
     return p;

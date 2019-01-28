@@ -157,7 +157,7 @@ void kcf_test()
         cv::Mat img=imread(path+"00000001.jpg");
         imshow("img",img);
         double all_time=0;
-        KCFTracker tracker(true,true,true,false);    //构造
+        KCFTracker tracker(true,true,true,true);    //构造
         tracker.init(groundtruth[0],img);      //初始化
         cv::rectangle(img,groundtruth[0],cv::Scalar(0,0,255));   //第一帧画框
         
@@ -183,8 +183,8 @@ void kcf_test()
             //cout<<"fps\t"<<1./time<<endl;
             //cout<<"ave_fps:\t"<<double(i-1)/all_time<<endl;
             cv::rectangle(frame,res,cv::Scalar(0,0,255));
-            //imshow("test",frame);
-            //waitKey(20);
+            imshow("test",frame);
+            waitKey(10);
         }
     }
     
