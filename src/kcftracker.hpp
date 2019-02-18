@@ -72,7 +72,7 @@ public:
     float scale_step; // 尺度步长 scale step for multi-scale estimation
     float scale_weight;  // 尺度权重，加强当前选择的权重to downweight detection scores of other scales for added stability
     float PSR;
-    bool interpolation;
+    bool interpolation;     //是否进行插值的标志，按理说应该放在private里的，我为了调试简单先放在这里了
 protected:
     // 检测函数 Detect object in the current frame.
     cv::Point2f detect(cv::Mat z, cv::Mat x, float &peak_value);
@@ -199,7 +199,7 @@ void KCFTracker::init(const cv::Rect &roi, cv::Mat image)
     _roi = roi;       //roi设置
     assert(roi.width >= 0 && roi.height >= 0);    //长和宽必须都大于0，否则终止程序并报错，主要是调试的时候用
     _tmpl = getFeatures(image, 1);         //获取特征图
-    std::cout<<size_patch[0]<<"*"<<size_patch[1]<<std::endl;
+    //std::cout<<size_patch[0]<<"*"<<size_patch[1]<<std::endl;
     _prob = createGaussianPeak(size_patch[0], size_patch[1]);    //创建高斯峰，这个只在第一帧的时候创建
     _alphaf = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));   //创建alphaf，是32位复数二通道，用0初始化
     //_num = cv::Mat(size_patch[0], size_patch[1], CV_32FC2, float(0));
@@ -249,8 +249,21 @@ cv::Rect KCFTracker::update(cv::Mat image)
     }
 
     // Adjust by cell size and _scale
+    if(this->interpolation==true)
+    {
+    _roi.x = cx - _roi.width / 2.0f + ((float) res.x  * _scale);
+    _roi.y = cy - _roi.height / 2.0f + ((float) res.y  * _scale);
+
+    }
+    else
+    {
     _roi.x = cx - _roi.width / 2.0f + ((float) res.x * cell_size * _scale);
-    _roi.y = cy - _roi.height / 2.0f + ((float) res.y * cell_size * _scale);
+    _roi.y = cy - _roi.height / 2.0f + ((float) res.y * cell_size * _scale); 
+    }
+
+    
+
+    
 
     if (_roi.x >= image.cols - 1) _roi.x = image.cols - 1;
     if (_roi.y >= image.rows - 1) _roi.y = image.rows - 1;
@@ -296,7 +309,7 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
 
     cv::Mat res_tmp=fftd(response,true);
     cv::Mat res=real(res_tmp);
-    std::cout<<res.size()<<std::endl;
+    //std::cout<<res.size()<<std::endl;
     
     
     //我把这里的一行代码改成了上面的三行，为了做频域插值方便。
@@ -353,7 +366,7 @@ cv::Point2f KCFTracker::detect(cv::Mat z, cv::Mat x, float &peak_value)
     //这个是得到脱靶量的相对值
     p.x -= (res.cols) / 2;
     p.y -= (res.rows) / 2;
-    std::cout<<"drift\t"<<p.x<<", "<<p.y<<std::endl;
+    //std::cout<<"drift\t"<<p.x<<", "<<p.y<<std::endl;
 
 
     return p;

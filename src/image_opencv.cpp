@@ -120,16 +120,23 @@ void kcf_test()
         cout<<"this is the VOT tracking test!!"<<endl;
         cout<<"and this is "<<list[i]<<endl;
 
-        ofstream res_ground("results//votresults//"+list[i]+"_res_ground.txt");
-        ofstream res_tracking("results//votresults//"+list[i]+"_res_tracking.txt");
-        ofstream PSR_tracking("results//votresults//"+list[i]+"_PSR.txt");
-        ofstream ave_fps("results//votresults//"+list[i]+"_avefps.txt"); 
+        //保存跟踪结果
+        ofstream res_ground("results//" + list[i] + "_res_ground.txt");
+		ofstream res_kcf("results//" + list[i] + "_res_kcf.txt");
+		ofstream res_kcf_inter("results//" + list[i] + "_res_kcf_interpolation.txt");
+		ofstream ave_fps_kcf("results//" + list[i] + "_ave_fps_kcf.txt");
+		ofstream ave_fps_kcf_inter("results//" + list[i] + "_ave_fps_kcf_inter.txt");
+
 
         //表头
-        res_ground<<"frame\tx\ty\twidth\theight\n";
-        res_tracking<<"frame\tx\ty\twidth\theight\n";
-        PSR_tracking<<"frame\tPSR\n";
-        ave_fps<<"frame\tave_fps\n";
+        res_ground<< "frame\tx\ty\twidth\theight\n";
+		res_kcf << "frame\tx\ty\twidth\theight\n";
+		res_kcf_inter << "frame\tx\ty\twidth\theight\n";
+		ave_fps_kcf<< "frame\tave_fps\n";
+		ave_fps_kcf_inter << "frame\tave_fps\n";
+
+        
+    
 
         string path="vot2015//"+list[i]+"//";      //当前图片路径
         cout<<path<<endl;
@@ -147,6 +154,10 @@ void kcf_test()
             res_ground<<index++<<"\t"<<gg.x<<"\t"<<gg.y<<"\t"<<gg.width<<"\t"<<gg.height<<"\n";
         }
         res_ground.close();      //关闭txt文件
+
+        //第一帧的跟踪结果就采用groundtruth里读取的值
+        res_kcf << 1 << "\t" << groundtruth[0].x << "\t" << groundtruth[0].y << "\t" << groundtruth[0].width << "\t" << groundtruth[0].height << "\n";
+		res_kcf_inter << 1 << "\t" << groundtruth[0].x << "\t" << groundtruth[0].y << "\t" << groundtruth[0].width << "\t" << groundtruth[0].height << "\n";
         
         //跟踪结果保存的vector
         vector<cv::Rect> track_res;
@@ -158,7 +169,9 @@ void kcf_test()
         imshow("img",img);
         double all_time=0;
         KCFTracker tracker(true,true,true,true);    //构造
+        KCFTracker tracker_NI(true,true,true,false);    //构造
         tracker.init(groundtruth[0],img);      //初始化
+        tracker_NI.init(groundtruth[0],img);
         cv::rectangle(img,groundtruth[0],cv::Scalar(0,0,255));   //第一帧画框
         
         for(int j=2;j<num_of_line;j++)
@@ -168,21 +181,28 @@ void kcf_test()
             
             cv::Mat frame=imread(img_path);    
             double start=static_cast<double>(getTickCount());
-            cv::Rect res=tracker.update(frame);
+            cv::Rect Rect_kcf_i=tracker.update(frame);
+            cv::Rect Rect_kcf=tracker_NI.update(frame);
             double time=((double)getTickCount()-start)/getTickFrequency();
-            groundtruth.push_back(res);
+
+            //主要的参数
+            res_kcf << j << "\t" << Rect_kcf.x << "\t" << Rect_kcf.y << "\t" << Rect_kcf.width << "\t" << Rect_kcf.height << "\n";
+			res_kcf_inter << j << "\t" << Rect_kcf_i.x << "\t" << Rect_kcf_i.y << "\t" << Rect_kcf_i.width << "\t" << Rect_kcf_i.height << "\n";
+
+
             all_time+=time;
 
-            //跟踪的主要参数都记录下来
-            res_tracking<<j<<"\t"<<res.x<<"\t"<<res.y<<"\t"<<res.width<<"\t"<<res.height<<"\n";    //跟踪结果，
-            PSR_tracking<<j<<"\t"<<tracker.PSR<<"\n";
-            ave_fps<<j<<"\t"<<double(j-1)/all_time<<"\n";
+           
 
 
             
             //cout<<"fps\t"<<1./time<<endl;
             //cout<<"ave_fps:\t"<<double(i-1)/all_time<<endl;
-            cv::rectangle(frame,res,cv::Scalar(0,0,255));
+            //蓝色groundtruth，红色KCF，绿色KCF_i
+			rectangle(frame, groundtruth[j - 1], Scalar(255, 0, 0));
+			rectangle(frame, Rect_kcf, Scalar(0, 0, 255));
+			rectangle(frame, Rect_kcf_i, Scalar(0, 255, 0));
+
             imshow("test",frame);
             waitKey(10);
         }
