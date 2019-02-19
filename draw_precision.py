@@ -8,9 +8,10 @@ this code can draw position precision of tracking result in vot challenge
 
 import math
 import matplotlib.pyplot as plt
+import numpy
 
 #存放文件的路径以及各种文件的路径
-path="C:\\Users\\zhxing\\Desktop\\code_of_paper_about_tracking\\results\\"
+path="results//"
 ave_fps_kcf="_ave_fps_kcf.txt"
 ave_fps_kcf_inter="_ave_fps_kcf_inter.txt"
 res_ground="_res_ground.txt"
@@ -23,8 +24,23 @@ lines=file.readlines()
 
 
 
+
+
+#calculate the Pre,CLE is CENTOR LOCATION ERROR,and it is a list
+def calculatePre(CLE):
+    res=[]
+    for thresh in range(1,100):
+        tmp=numpy.array(CLE)  #get the temporary variable
+        tmp[tmp<=thresh]=1
+        tmp[tmp>thresh]=0
+        num=sum(tmp)
+        rate=float(num)/float(tmp.size)
+        res.append(rate)
+    return res
+
+
 #定义画中心位置误差图像的函数
-def drawCLE(ResGroundLines,ResKcfLines,ResKcfILines):
+def drawCLE(title,ResGroundLines,ResKcfLines,ResKcfILines):
     CleKcf=[]
     CleKcfI=[]
     num_of_frame=len(ResGroundLines)-2        #帧数，去掉表头和最后一帧（主要是我结果好像少写了一帧）
@@ -47,11 +63,27 @@ def drawCLE(ResGroundLines,ResKcfLines,ResKcfILines):
         
         CleKcf.append(CLE_KCF)
         CleKcfI.append(CLE_KCF_I)
-    plt.figure()
-    plt.plot(CleKcf)
-    plt.plot(CleKcfI)
-    plt.legend()
         
+    plt.figure()       #CLE  CENTOR LOCATION ERROR
+    plt.title(title+"CLE Plot")
+    plt.plot(CleKcf,color='red',label="KCF")
+    plt.plot(CleKcfI,color='blue',label="KCF_I")
+    plt.legend()
+    plt.savefig("results//png//"+title+".png",dpi=600)
+    
+    PreKcf=calculatePre(CleKcf)
+    PreKcfI=calculatePre(CleKcfI)
+    plt.figure()       #PRECISION PERCENT
+    plt.title(title+"Precision Plot")
+    plt.plot(PreKcf,color='red',label='KCF')
+    plt.plot(PreKcfI,color='blue',label="KCF_I")
+    plt.legend()
+    plt.savefig("results//png//"+title+"_Pre.png",dpi=600)
+    
+    
+    
+    
+         
             
 
 
@@ -70,7 +102,7 @@ for target in lines:
     ResKcfILines=ResKcfI.readlines()
     
     
-    drawCLE(ResGroundLines,ResKcfLines,ResKcfILines)
+    drawCLE(target,ResGroundLines,ResKcfLines,ResKcfILines)
         
         
     
