@@ -112,6 +112,7 @@ extern "C" {
 void kcf_test()
 {
     printf("this is a kcf test code!!!\n");
+    printf("hello world testing !\n");
     vector<string> list=read_list("vot2015//list.txt");
 
     for(int i=0;i<list.size();i++)
