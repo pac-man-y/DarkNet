@@ -125,7 +125,7 @@ void kcf_test()
         ofstream res_ground("results//txt2014//" + list[i] + "_res_ground.txt");
 		ofstream res_kcf("results//txt2014//" + list[i] + "_res_kcf.txt");
 		ofstream res_kcf_inter("results//txt2014//" + list[i] + "_res_kcf_interpolation.txt");
-        ofstream res_kcf_lab("results//txt2014//" + list[i] + "_res_kcf_lab.txt")
+        ofstream res_kcf_lab("results//txt2014//" + list[i] + "_res_kcf_lab.txt");
         ofstream res_kcf_inter_lab("results//txt2014//" + list[i] + "_res_kcf_interpolation_lab.txt");
 		ofstream ave_fps_kcf("results//txt2014//" + list[i] + "_ave_fps_kcf.txt");
 		ofstream ave_fps_kcf_inter("results//txt2014//" + list[i] + "_ave_fps_kcf_inter.txt");
@@ -200,8 +200,8 @@ void kcf_test()
             //主要的参数
             res_kcf << j << "\t" << Rect_kcf.x << "\t" << Rect_kcf.y << "\t" << Rect_kcf.width << "\t" << Rect_kcf.height << "\n";
 			res_kcf_inter << j << "\t" << Rect_kcf_i.x << "\t" << Rect_kcf_i.y << "\t" << Rect_kcf_i.width << "\t" << Rect_kcf_i.height << "\n";
-            res_kcf_lab << 1 << "\t" << groundtruth[0].x << "\t" << groundtruth[0].y << "\t" << groundtruth[0].width << "\t" << groundtruth[0].height << "\n";
-            res_kcf_inter_lab << 1 << "\t" << groundtruth[0].x << "\t" << groundtruth[0].y << "\t" << groundtruth[0].width << "\t" << groundtruth[0].height << "\n";
+            res_kcf_lab << j << "\t" << Rect_kcf_lab.x << "\t" << Rect_kcf_lab.y << "\t" << Rect_kcf_lab.width << "\t" << Rect_kcf_lab.height << "\n";
+            res_kcf_inter_lab << j << "\t" << Rect_kcf_IN_lab.x << "\t" << Rect_kcf_IN_lab.y << "\t" << Rect_kcf_IN_lab.width << "\t" << Rect_kcf_IN_lab.height << "\n";
 
             all_time+=time;
 
@@ -215,6 +215,8 @@ void kcf_test()
 			rectangle(frame, groundtruth[j - 1], Scalar(255, 0, 0));
 			rectangle(frame, Rect_kcf, Scalar(0, 0, 255));
 			rectangle(frame, Rect_kcf_i, Scalar(0, 255, 0));
+            rectangle(frame, Rect_kcf_lab, Scalar(255, 255, 0));
+            rectangle(frame, Rect_kcf_IN_lab, Scalar(0, 255, 255));
 
             imshow("test",frame);
             waitKey(10);
