@@ -3,10 +3,11 @@ backup/
 obj/
 VOT/
 vot2015/
+vot2014/
 results/
 
 ### files
-DJ.MOV
+darknet
 darknet53.conv.74
 yolov3-tiny.weights
 yolov3.weights

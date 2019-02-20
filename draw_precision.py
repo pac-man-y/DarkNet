@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy
 
 #存放文件的路径以及各种文件的路径
-path="results//"
+path="results//txt2014//"
 ave_fps_kcf="_ave_fps_kcf.txt"
 ave_fps_kcf_inter="_ave_fps_kcf_inter.txt"
 res_ground="_res_ground.txt"
@@ -69,7 +69,7 @@ def drawCLE(title,ResGroundLines,ResKcfLines,ResKcfILines):
     plt.plot(CleKcf,color='red',label="KCF")
     plt.plot(CleKcfI,color='blue',label="KCF_I")
     plt.legend()
-    plt.savefig("results//png//"+title+".png",dpi=600)
+    plt.savefig("results//png2014//"+title+".png",dpi=600)
     
     PreKcf=calculatePre(CleKcf)
     PreKcfI=calculatePre(CleKcfI)
@@ -78,7 +78,7 @@ def drawCLE(title,ResGroundLines,ResKcfLines,ResKcfILines):
     plt.plot(PreKcf,color='red',label='KCF')
     plt.plot(PreKcfI,color='blue',label="KCF_I")
     plt.legend()
-    plt.savefig("results//png//"+title+"_Pre.png",dpi=600)
+    plt.savefig("results//png2014//"+title+"_Pre.png",dpi=600)
     
     
     
