@@ -113,7 +113,7 @@ void kcf_test()
 {
     printf("this is a kcf test code!!!\n");
     printf("hello world testing !\n");
-    vector<string> list=read_list("vot2014//list.txt");
+    vector<string> list=read_list("vot2015//list.txt");
 
     for(int i=0;i<list.size();i++)
     {
@@ -122,13 +122,13 @@ void kcf_test()
         cout<<"and this is "<<list[i]<<endl;
 
         //保存跟踪结果
-        ofstream res_ground("results//txt2014//" + list[i] + "_res_ground.txt");
-		ofstream res_kcf("results//txt2014//" + list[i] + "_res_kcf.txt");
-		ofstream res_kcf_inter("results//txt2014//" + list[i] + "_res_kcf_interpolation.txt");
-        ofstream res_kcf_lab("results//txt2014//" + list[i] + "_res_kcf_lab.txt");
-        ofstream res_kcf_inter_lab("results//txt2014//" + list[i] + "_res_kcf_interpolation_lab.txt");
-		ofstream ave_fps_kcf("results//txt2014//" + list[i] + "_ave_fps_kcf.txt");
-		ofstream ave_fps_kcf_inter("results//txt2014//" + list[i] + "_ave_fps_kcf_inter.txt");
+        ofstream res_ground("results//txt2015//" + list[i] + "_res_ground.txt");
+		ofstream res_kcf("results//txt2015//" + list[i] + "_res_kcf.txt");
+		ofstream res_kcf_inter("results//txt2015//" + list[i] + "_res_kcf_interpolation.txt");
+        ofstream res_kcf_lab("results//txt2015//" + list[i] + "_res_kcf_lab.txt");
+        ofstream res_kcf_inter_lab("results//txt2015//" + list[i] + "_res_kcf_interpolation_lab.txt");
+		ofstream ave_fps_kcf("results//txt2015//" + list[i] + "_ave_fps_kcf.txt");
+		ofstream ave_fps_kcf_inter("results//txt2015//" + list[i] + "_ave_fps_kcf_inter.txt");
 
 
         //表头
@@ -143,7 +143,7 @@ void kcf_test()
         
     
 
-        string path="vot2014//"+list[i]+"//";      //当前图片路径
+        string path="vot2015//"+list[i]+"//";      //当前图片路径
         cout<<path<<endl;
 
         int num_of_line=0;   //图片数量
@@ -174,10 +174,10 @@ void kcf_test()
         cv::Mat img=imread(path+"00000001.jpg");
         imshow("img",img);
         double all_time=0;
-        KCFTracker tracker(true,true,true,true,false);    //构造hog
-        KCFTracker tracker_IN(true,true,true,false,false);    //构造hog_in
+        KCFTracker tracker(true,true,true,false,false);    //构造hog
+        KCFTracker tracker_IN(true,true,true,true,false);    //构造hog_in
         KCFTracker tracker_lab(true,true,true,false,true);    //构造hog+lab
-        KCFTracker tracker_IN_lab(true,true,true,false,true);    //构造hog_in+lab
+        KCFTracker tracker_IN_lab(true,true,true,true,true);    //构造hog_in+lab
         tracker.init(groundtruth[0],img);      //初始化
         tracker_IN.init(groundtruth[0],img);
         tracker_lab.init(groundtruth[0],img);
