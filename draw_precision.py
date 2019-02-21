@@ -152,10 +152,10 @@ for target in lines:
     CLE_KCFI_LAB=GetCLElist(target,ResGroundLines,ResKcfI_lablines)
     
     
-    CLE_KCF=GetCLElist(ResGroundLines,ResKcfLines)
-    CLE_KCFI=GetCLElist(ResGroundLines,ResKcfILines)
-    CLE_KCF_LAB=GetCLElist(ResGroundLines,ResKcf_lablines)
-    CLE_KCFI_LAB=GetCLElist(ResGroundLines,ResKcfI_lablines)
+    IOU_KCF=GetIOUList(ResGroundLines,ResKcfLines)
+    IOU_KCFI=GetIOUList(ResGroundLines,ResKcfILines)
+    IOU_KCF_LAB=GetIOUList(ResGroundLines,ResKcf_lablines)
+    IOU_KCFI_LAB=GetIOUList(ResGroundLines,ResKcfI_lablines)
     
     
     #draw the CLE
@@ -166,7 +166,7 @@ for target in lines:
     plt.plot(CLE_KCF_LAB,color='blue',label='CLE_KCF_LAB',LineWidth=1)
     plt.plot(CLE_KCFI_LAB,color='black',label='CLE_KCFI_LAB',LineWidth=1)
     plt.legend()
-    plt.savefig("results//png2014//"+target+"_Pre.png",dpi=600)
+    plt.savefig("results//png2014//"+target+"_cle.png",dpi=600)
     
     #draw the preplot
     plt.figure()
@@ -177,6 +177,17 @@ for target in lines:
     plt.plot(calculatePre(CLE_KCFI_LAB),color='black',label='CLE_KCFI_LAB',LineWidth=1)
     plt.legend()
     plt.savefig("results//png2014//"+target+"_Pre.png",dpi=600)
+    
+    
+    #draw the IOU
+    plt.figure()
+    plt.title(target)
+    plt.plot(IOU_KCF,color='red',label='IOU_KCF',LineWidth=1)
+    plt.plot(IOU_KCFI,color='green',label='IOU_KCFI',LineWidth=1)
+    plt.plot(IOU_KCF_LAB,color='blue',label='IOU_KCF_LAB',LineWidth=1)
+    plt.plot(IOU_KCFI_LAB,color='black',label='IOU_KCFI_LAB',LineWidth=1)
+    plt.legend()
+    plt.savefig("results//png2014//"+target+"_iou.png",dpi=600)
     
     
     
