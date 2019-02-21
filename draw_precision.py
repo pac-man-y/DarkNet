@@ -26,8 +26,57 @@ lines=file.readlines()
 
 
 
-
-
+#calculate IOU,rect1 and rect2 are rectangles(x,y,width,height)
+def calculateIOU(rect1,rect2):
+    #calculate the area
+    area1=rect1[2]*rect1[3]  
+    area2=rect2[2]*rect2[3]
+    #calculate the sum area
+    area=area1+area2
+    
+    #calculate the edge line of every rect
+    top1=rect1[1]
+    left1=rect1[0]
+    bottom1=rect1[1]+rect1[3]
+    right1=rect1[0]+rect1[2]
+    
+    top2=rect2[1]
+    left2=rect2[0]
+    bottom2=rect2[1]+rect2[3]
+    right2=rect2[0]+rect2[2]
+    
+    #calculate the intersect rectangle
+    top=max(top1,top2)
+    left=max(left1,left2)
+    bottom=min(bottom1,bottom2)
+    right=min(right1,right2)
+    
+    #if no intersect
+    if top>=bottom or right<=left:
+        return 0
+    else:
+        intersectArea=(bottom-top)*(right-left)
+        return intersectArea/(area-intersectArea)
+    
+def GetIOUList(ResGroundLines,ResLines):
+    num_of_frame=len(ResGroundLines)-2
+    IOU=[]
+    for index in range(1,(num_of_frame+1)):
+        #每一行拿出来，第一列是分别是 frame	x	y	width	height,分离出来并转换成数字
+        GroundPos=(ResGroundLines[index]).split('\t')
+        ResPos=(ResLines[index]).split('\t')
+       
+        #a line,trans to num
+        GroundPos=list(map(int,GroundPos))
+        ResPos=list(map(int,ResPos))
+        
+        #get the rectangle and calculate the IOU
+        rect1=GroundPos[1:5]
+        rect2=ResPos[1:5]
+        iou=calculateIOU(rect1,rect2)
+        IOU.append(iou)
+    return IOU
+        
 
 #calculate the Pre,CLE is CENTOR LOCATION ERROR,and it is a list
 def calculatePre(CLE):
@@ -76,38 +125,6 @@ def GetCLElist(title,ResGroundLines,ResLines):
     return CLE
 
 
-        
-    
-        
-        
-        
-        
-        
-        
-'''  
-    plt.figure()       #CLE  CENTOR LOCATION ERROR
-    plt.title(title+"CLE Plot")
-    plt.plot(CleKcf,color='red',label="KCF")
-    plt.plot(CleKcfI,color='blue',label="KCF_I")
-    plt.legend()
-    plt.savefig("results//png2014//"+title+".png",dpi=600)
-    
-    PreKcf=calculatePre(CleKcf)
-    PreKcfI=calculatePre(CleKcfI)
-    plt.figure()       #PRECISION PERCENT
-    plt.title(title+"Precision Plot")
-    plt.plot(PreKcf,color='red',label='KCF')
-    plt.plot(PreKcfI,color='blue',label="KCF_I")
-    plt.legend()
-    plt.savefig("results//png2014//"+title+"_Pre.png",dpi=600)
-'''  
-    
-    
-    
-         
-            
-
-
 for target in lines:
     print("this is the:\t"+target)
     #target有个回车，这里需要把这个回车给去掉,然后下面把当前target下的文件读取
@@ -133,6 +150,13 @@ for target in lines:
     CLE_KCFI=GetCLElist(target,ResGroundLines,ResKcfILines)
     CLE_KCF_LAB=GetCLElist(target,ResGroundLines,ResKcf_lablines)
     CLE_KCFI_LAB=GetCLElist(target,ResGroundLines,ResKcfI_lablines)
+    
+    
+    CLE_KCF=GetCLElist(ResGroundLines,ResKcfLines)
+    CLE_KCFI=GetCLElist(ResGroundLines,ResKcfILines)
+    CLE_KCF_LAB=GetCLElist(ResGroundLines,ResKcf_lablines)
+    CLE_KCFI_LAB=GetCLElist(ResGroundLines,ResKcfI_lablines)
+    
     
     #draw the CLE
     plt.figure()
