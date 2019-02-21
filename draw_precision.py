@@ -11,9 +11,8 @@ import matplotlib.pyplot as plt
 import numpy
 
 #存放文件的路径以及各种文件的路径
-path="results//txt2014//"
-ave_fps_kcf="_ave_fps_kcf.txt"
-ave_fps_kcf_inter="_ave_fps_kcf_inter.txt"
+path="results//txt2015//"
+savepath="results//png2015//"
 res_ground="_res_ground.txt"
 res_kcf="_res_kcf.txt"
 res_kcf_interpolation="_res_kcf_interpolation.txt"
@@ -67,8 +66,8 @@ def GetIOUList(ResGroundLines,ResLines):
         ResPos=(ResLines[index]).split('\t')
        
         #a line,trans to num
-        GroundPos=list(map(int,GroundPos))
-        ResPos=list(map(int,ResPos))
+        GroundPos=list(map(float,GroundPos))
+        ResPos=list(map(float,ResPos))
         
         #get the rectangle and calculate the IOU
         rect1=GroundPos[1:5]
@@ -116,8 +115,8 @@ def GetCLElist(title,ResGroundLines,ResLines):
         ResPos=(ResLines[index]).split('\t')
        
         #a line,trans to num
-        GroundPos=list(map(int,GroundPos))
-        ResPos=list(map(int,ResPos))
+        GroundPos=list(map(float,GroundPos))
+        ResPos=list(map(float,ResPos))
         
         #append to the list
         cletmp=GetCLE(GroundPos,ResPos)
@@ -128,8 +127,6 @@ def GetCLElist(title,ResGroundLines,ResLines):
 for target in lines:
     print("this is the:\t"+target)
     #target有个回车，这里需要把这个回车给去掉,然后下面把当前target下的文件读取
-    AveFpsKcf=open(path+target[:-1]+ave_fps_kcf)
-    AveFpsKcfI=open(path+target[:-1]+ave_fps_kcf_inter)
     ResGround=open(path+target[:-1]+res_ground)
     ResKcf=open(path+target[:-1]+res_kcf)
     ResKcfI=open(path+target[:-1]+res_kcf_interpolation)
@@ -138,8 +135,6 @@ for target in lines:
     #open the txt
     
     #read lines,this is string list
-    AveFpsKcfLines=AveFpsKcf.readlines()
-    AveFpsKcfILines=AveFpsKcfI.readlines()
     ResGroundLines=ResGround.readlines()
     ResKcfLines=ResKcf.readlines()
     ResKcfILines=ResKcfI.readlines()
@@ -160,34 +155,34 @@ for target in lines:
     
     #draw the CLE
     plt.figure()
-    plt.title(target)
-    plt.plot(CLE_KCF,color='red',label='CLE_KCF',LineWidth=1)
-    plt.plot(CLE_KCFI,color='green',label='CLE_KCFI',LineWidth=1)
-    plt.plot(CLE_KCF_LAB,color='blue',label='CLE_KCF_LAB',LineWidth=1)
-    plt.plot(CLE_KCFI_LAB,color='black',label='CLE_KCFI_LAB',LineWidth=1)
+    plt.title(str(target+"  CLE"))
+    plt.plot(CLE_KCF,color='red',label='CLE_KCF',LineWidth=0.5)
+    plt.plot(CLE_KCFI,color='green',label='CLE_KCFI',LineWidth=0.5)
+    plt.plot(CLE_KCF_LAB,color='blue',label='CLE_KCF_LAB',LineWidth=0.5)
+    plt.plot(CLE_KCFI_LAB,color='black',label='CLE_KCFI_LAB',LineWidth=0.5)
     plt.legend()
-    plt.savefig("results//png2014//"+target+"_cle.png",dpi=600)
+    plt.savefig(savepath+target+"_cle.png",dpi=600)
     
     #draw the preplot
     plt.figure()
-    plt.title(target)
-    plt.plot(calculatePre(CLE_KCF),color='red',label='CLE_KCF',LineWidth=1)
-    plt.plot(calculatePre(CLE_KCFI),color='green',label='CLE_KCFI',LineWidth=1)
-    plt.plot(calculatePre(CLE_KCF_LAB),color='blue',label='CLE_KCF_LAB',LineWidth=1)
-    plt.plot(calculatePre(CLE_KCFI_LAB),color='black',label='CLE_KCFI_LAB',LineWidth=1)
+    plt.title(str(target+"  Pre"))
+    plt.plot(calculatePre(CLE_KCF),color='red',label='CLE_KCF',LineWidth=0.5)
+    plt.plot(calculatePre(CLE_KCFI),color='green',label='CLE_KCFI',LineWidth=0.5)
+    plt.plot(calculatePre(CLE_KCF_LAB),color='blue',label='CLE_KCF_LAB',LineWidth=0.5)
+    plt.plot(calculatePre(CLE_KCFI_LAB),color='black',label='CLE_KCFI_LAB',LineWidth=0.5)
     plt.legend()
-    plt.savefig("results//png2014//"+target+"_Pre.png",dpi=600)
+    plt.savefig(savepath+target+"_Pre.png",dpi=600)
     
     
     #draw the IOU
     plt.figure()
-    plt.title(target)
-    plt.plot(IOU_KCF,color='red',label='IOU_KCF',LineWidth=1)
-    plt.plot(IOU_KCFI,color='green',label='IOU_KCFI',LineWidth=1)
-    plt.plot(IOU_KCF_LAB,color='blue',label='IOU_KCF_LAB',LineWidth=1)
-    plt.plot(IOU_KCFI_LAB,color='black',label='IOU_KCFI_LAB',LineWidth=1)
+    plt.title(str(target+" IOU"))
+    plt.plot(IOU_KCF,color='red',label='IOU_KCF',LineWidth=0.5)
+    plt.plot(IOU_KCFI,color='green',label='IOU_KCFI',LineWidth=0.5)
+    plt.plot(IOU_KCF_LAB,color='blue',label='IOU_KCF_LAB',LineWidth=0.5)
+    plt.plot(IOU_KCFI_LAB,color='black',label='IOU_KCFI_LAB',LineWidth=0.5)
     plt.legend()
-    plt.savefig("results//png2014//"+target+"_iou.png",dpi=600)
+    plt.savefig(savepath+target+"_iou.png",dpi=600)
     
     
     
