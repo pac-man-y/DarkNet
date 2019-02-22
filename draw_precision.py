@@ -8,7 +8,7 @@ this code can draw position precision of tracking result in vot challenge
 
 import math
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 
 #存放文件的路径以及各种文件的路径
 path="results//txt2015//"
@@ -22,6 +22,8 @@ res_kcf_interpolation_lab="_res_kcf_interpolation_lab.txt"
 
 file=open(path+"list.txt")
 lines=file.readlines()
+
+
 
 
 
@@ -81,7 +83,7 @@ def GetIOUList(ResGroundLines,ResLines):
 def calculatePre(CLE):
     res=[]
     for thresh in range(1,100):
-        tmp=numpy.array(CLE)  #get the temporary variable
+        tmp=np.array(CLE)  #get the temporary variable
         tmp[tmp<=thresh]=1
         tmp[tmp>thresh]=0
         num=sum(tmp)
@@ -124,6 +126,37 @@ def GetCLElist(title,ResGroundLines,ResLines):
     return CLE
 
 
+#draw fps
+def calculateFPS(ResGroundLines,ResLines):
+    num_of_frame=len(ResGroundLines)-2        #帧数，去掉表头和最后一帧（主要是我结果好像少写了一帧）
+    #list,numype
+    area=0
+    fps=0
+    for index in range(1,(num_of_frame+1)):
+        #每一行拿出来，第一列是分别是 frame	x	y	width	height,分离出来并转换成数字
+        GroundPos=(ResGroundLines[index]).split('\t')
+        ResPos=(ResLines[index]).split('\t')
+       
+        #a line,trans to num(float)
+        GroundPos=list(map(float,GroundPos))
+        ResPos=list(map(float,ResPos))
+        
+        area=area+GroundPos[3]*GroundPos[4]   # calculate the area
+        fps=fps+ResPos[5]         #calculate the fps
+    ave_area=area/num_of_frame
+    ave_fps=fps/num_of_frame
+    return ave_area,ave_fps
+    
+
+def dreaFPS(area,fps):
+    area_fps=np.array([area,fps])  #transform to matrix
+    
+    
+    
+    
+
+AREA=[]
+FPS=[]
 for target in lines:
     print("this is the:\t"+target)
     #target有个回车，这里需要把这个回车给去掉,然后下面把当前target下的文件读取
@@ -152,7 +185,11 @@ for target in lines:
     IOU_KCF_LAB=GetIOUList(ResGroundLines,ResKcf_lablines)
     IOU_KCFI_LAB=GetIOUList(ResGroundLines,ResKcfI_lablines)
     
-    
+    area,fps=calculateFPS(ResGroundLines,ResKcfLines)
+    AREA.append(area)
+    FPS.append(fps)
+  
+'''
     #draw the CLE
     plt.figure()
     plt.title(str(target+"  CLE"))
@@ -183,14 +220,13 @@ for target in lines:
     plt.plot(IOU_KCFI_LAB,color='black',label='IOU_KCFI_LAB',LineWidth=0.5)
     plt.legend()
     plt.savefig(savepath+target+"_iou.png",dpi=600)
-    
-    
-    
-    
-    
-    
-    
-    #drawCLE(target,ResGroundLines,ResKcfLines,ResKcfILines)
+'''
+plt.figure()
+plt.scatter(AREA,FPS) 
+plt.xlim(0,20000)   #set x range
+plt.xlabel("area")
+plt.ylabel("fps")
+plt.title("FPS_AREA")
         
         
     
