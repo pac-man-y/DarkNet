@@ -136,6 +136,7 @@ void *detect_in_thread(void *ptr)
     if (nms > 0) do_nms_obj(dets, nboxes, l.classes, nms);
     
     //打印一些参数
+    //帧率和识别的目标
     printf("\033[2J");
     printf("\033[1;1H");
     printf("\nFPS:%.1f\n",fps);
@@ -143,8 +144,12 @@ void *detect_in_thread(void *ptr)
     image display = buff[(buff_index+2) % 3];    //需要显示的当前的图片
     //图上面画框之类的函数，但是这里实际实际上并没有显示，显示的话还是需要用opencv来做
     draw_detections(display, dets, nboxes, demo_thresh, demo_names, demo_alphabet, demo_classes);
+    
+
+
     //释放内存应该是
     free_detections(dets, nboxes);
+    
 
     demo_index = (demo_index + 1)%demo_frame;
     running = 0;
