@@ -8,6 +8,8 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "opencv2/opencv.hpp"
+
+
 #include "image.h"
 #include <string> 
 #include <vector>    //存取groundtruth信息
@@ -15,6 +17,7 @@
 
 using namespace cv;
 using namespace std;
+
 
 
 
@@ -107,6 +110,13 @@ vector<string> read_list(const string &list_name)
 
 
 extern "C" {
+
+
+void kcf(image img,bbox box)
+{
+    //改天在写，今天好累！！190225
+    Mat current_frame=image_to_mat(img);     //转换为Mat格式
+}
 
 
 void kcf_test()
