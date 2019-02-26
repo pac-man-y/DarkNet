@@ -111,11 +111,25 @@ vector<string> read_list(const string &list_name)
 
 extern "C" {
 
+Mat image_to_mat(image im);
 
-void kcf(image img,bbox box)
+//我如果要是要做跟踪的话，那么需要传入的的参数为图像，以及检测到的矩形框的坐标
+void kcf(image img,box  bbox,bool isBegin)
 {
+    if(isBegin==true)
+    {
+        KCFTracker tracker(true,true,true,true,true);    //如果是第一帧，即刚开始做的话，那么我这里初始化跟踪器
+        Mat first_frame=image_to_mat(img);     //图片转换为mat格式
+        Rect first_rect=Rect(bbox.x,bbox.y,bbox.w,bbox.h);     //box格式的位置转换为rect格式的
+        tracker.init(first_rect,first_frame);        //初始化跟踪器
+    }
+    else
+    {
+        
+    }
+    
     //改天在写，今天好累！！190225
-    Mat current_frame=image_to_mat(img);     //转换为Mat格式
+    
 }
 
 

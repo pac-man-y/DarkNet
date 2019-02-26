@@ -236,7 +236,14 @@ image **load_alphabet()
     }
     return alphabets;
 }
-
+/*
+void printprob(detection *dets)
+{
+    //打印prob信息
+    //printf("%.0f%%\n",dets[0].prob[0]*100);
+    printf("打印不了prob？？");
+}
+*/
 //画图
 void draw_detections(image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes)
 {

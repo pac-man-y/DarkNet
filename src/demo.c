@@ -31,6 +31,8 @@ static float demo_thresh = 0;
 static float demo_hier = .5;
 static int running = 0;
 
+static int tracking=0;    //tracking 的标志位
+
 static int demo_frame = 3;
 static int demo_index = 0;
 static float **predictions;
@@ -90,6 +92,9 @@ detection *avg_predictions(network *net, int *nboxes)
 //  全部忽略掉了，后来实在是找不到，原来在这里，这样就好了。线程中的检测函数
 void *detect_in_thread(void *ptr)
 {
+
+    if(tracking==0)
+    {
     running = 1;       //就是一个标志位，表示正在进行当前的进程吧？
     float nms = .4;     //nms是最大值检测的
 
@@ -131,7 +136,6 @@ void *detect_in_thread(void *ptr)
     }
      */
 
-
     //非极大值抑制，
     if (nms > 0) do_nms_obj(dets, nboxes, l.classes, nms);
     
@@ -142,8 +146,34 @@ void *detect_in_thread(void *ptr)
     printf("\nFPS:%.1f\n",fps);
     printf("Objects:\n\n");
     image display = buff[(buff_index+2) % 3];    //需要显示的当前的图片
+
     //图上面画框之类的函数，但是这里实际实际上并没有显示，显示的话还是需要用opencv来做
     draw_detections(display, dets, nboxes, demo_thresh, demo_names, demo_alphabet, demo_classes);
+
+    box bbox=dets[0].bbox;
+    int xx=bbox.x*display.w;
+    int yy=bbox.y*display.h;
+    int ww=bbox.w*display.w;
+    int hh=bbox.h*display.h;
+
+    printf("from (x,y)=(%d,%d)\t",xx,yy);
+    printf("(w,h)=(%d,%d)\n",ww,hh);
+    printf("%d\n",nboxes);
+    /*这里一定要来判断bboxes是否是大于0的，如果不是的话，
+    那么dets[0]和dets[0].prob[0]这两个指针都是空的，把空指针传入printf就只能等着程序崩溃了。
+    陷阱就是虽然指针是野的，但是是有值的，可以进行计算，我一开始写的是：
+    
+    float prob=dets[0].prob[0]*100;
+    printf("%f\n",prob);
+
+    第一句计算是不会报错的，第二句直接崩溃。
+    */
+    if(nboxes>0)
+    {
+        printf("%f\n",dets[0].prob[0]*100);
+    }
+  
+
     
 
 
@@ -154,6 +184,14 @@ void *detect_in_thread(void *ptr)
     demo_index = (demo_index + 1)%demo_frame;
     running = 0;
     return 0;
+    }
+    else if(tracking==1)      //图像的显示函数是不能自己来写的，因为这个东西全是交给线程来做的，所以这里只能修改不能做显示，要不会卡死的。
+    {
+        printf("this is tracking test!!!\n");
+        image current_img = buff[(buff_index+2) % 3];
+
+        //show_image(current_img,"demo",25);
+    }
 }
 
 void *fetch_in_thread(void *ptr)    //线程函数
