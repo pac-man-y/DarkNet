@@ -31,7 +31,11 @@ static float demo_thresh = 0;
 static float demo_hier = .5;
 static int running = 0;
 
-static int tracking=0;    //tracking 的标志位
+static int tracking=0;           //tracking的标志位，满足跟踪条件的标志位
+static c_rect track_box;            //detection转track_box是需要的track_box,这是自己定义的一个数据类型，box是float的不太适合在这里用
+static int track_begin=0;        //是否是跟踪开始的标志，如果是第一帧的话，在跟踪框架中需要初始化track。否则就不需要
+static int xx,yy,ww,hh;
+
 
 static int demo_frame = 3;
 static int demo_index = 0;
@@ -40,6 +44,14 @@ static float *avg;
 static int demo_done = 0;
 static int demo_total = 0;
 double demo_time;
+
+
+
+void fun1(int lala)
+{
+    printf("%d\n",lala);
+}
+
 
 detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num);
 
@@ -151,32 +163,32 @@ void *detect_in_thread(void *ptr)
     draw_detections(display, dets, nboxes, demo_thresh, demo_names, demo_alphabet, demo_classes);
 
     box bbox=dets[0].bbox;
-    int xx=bbox.x*display.w;
-    int yy=bbox.y*display.h;
-    int ww=bbox.w*display.w;
-    int hh=bbox.h*display.h;
+    track_box.x=bbox.x*display.w;
+    track_box.y=bbox.y*display.h;
+    track_box.w=bbox.w*display.w;
+    track_box.h=bbox.h*display.h;
 
+    /*
     printf("from (x,y)=(%d,%d)\t",xx,yy);
     printf("(w,h)=(%d,%d)\n",ww,hh);
     printf("%d\n",nboxes);
+    */
     /*这里一定要来判断bboxes是否是大于0的，如果不是的话，
     那么dets[0]和dets[0].prob[0]这两个指针都是空的，把空指针传入printf就只能等着程序崩溃了。
     陷阱就是虽然指针是野的，但是是有值的，可以进行计算，我一开始写的是：
-    
     float prob=dets[0].prob[0]*100;
     printf("%f\n",prob);
-
     第一句计算是不会报错的，第二句直接崩溃。
     */
     if(nboxes>0)
     {
         printf("%f\n",dets[0].prob[0]*100);
+        if(dets[0].prob[0]*100>=95)   //如果检测到的置信率大于95%的话就转入跟踪
+        {
+            tracking=1;        //进入跟踪状态
+            track_begin=1;     //这是第一次进入跟踪状态
+        }
     }
-  
-
-    
-
-
     //释放内存应该是
     free_detections(dets, nboxes);
     
@@ -185,12 +197,16 @@ void *detect_in_thread(void *ptr)
     running = 0;
     return 0;
     }
-    else if(tracking==1)      //图像的显示函数是不能自己来写的，因为这个东西全是交给线程来做的，所以这里只能修改不能做显示，要不会卡死的。
+    //这里不用else，也就是说我是需要上面的运行结束之后，当前的帧就要转换到tracking模式下来做第一帧
+    //图像的显示函数是不能自己来写的，因为这个东西全是交给线程来做的，所以这里只能修改不能做显示，要不会卡死的。
+    if(tracking==1)      
     {
-        printf("this is tracking test!!!\n");
+        //printf("this is tracking process!!!\n");
         image current_img = buff[(buff_index+2) % 3];
+        //printf("track_begin%d\t\n",track_begin);    //这里看着是1啊，但是到后面就直接成了172了，神奇
+        //printf("bbox:%d\t%d\t%d\t%d\n",track_box.x,track_box.y,track_box.w,track_box.h); 
 
-        //show_image(current_img,"demo",25);
+        kcf(current_img,track_box,tracking); 
     }
 }
 

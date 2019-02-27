@@ -18,7 +18,11 @@
 using namespace cv;
 using namespace std;
 
+static int Begin=1;
 
+
+
+static KCFTracker tracker(true,true,true,false,false);   //track对象，这里必须设置成静态的，因为初始化一次，而且需要跳出去做线程切换，如果不写成静态的，则跳出函数的时候就会被CLEAR
 
 
 cv::Rect split_line(string &line);   //分离字符串函数声明
@@ -111,24 +115,43 @@ vector<string> read_list(const string &list_name)
 
 extern "C" {
 
+
 Mat image_to_mat(image im);
 
-//我如果要是要做跟踪的话，那么需要传入的的参数为图像，以及检测到的矩形框的坐标
-void kcf(image img,box  bbox,bool isBegin)
+//我如果要是要做跟踪的话，那么需要传入的的参数为图像，以及检测到的矩形框的坐标，
+void kcf(image img,c_rect bbox,int tracking)    //这里不能传入引用，传引用的话马上就崩掉
 {
-    if(isBegin==true)
+    //cout<<"is tracking \t"<<tracking<<endl;
+    //cout<<"Begin\t"<<Begin<<endl;
+    cout<<bbox.x<<" "<<bbox.y<<" "<<bbox.w<<" "<<bbox.h<<endl;
+    if(Begin==1)
     {
-        KCFTracker tracker(true,true,true,true,true);    //如果是第一帧，即刚开始做的话，那么我这里初始化跟踪器
+        cout<<"hello world!"<<endl;
+        
         Mat first_frame=image_to_mat(img);     //图片转换为mat格式
-        Rect first_rect=Rect(bbox.x,bbox.y,bbox.w,bbox.h);     //box格式的位置转换为rect格式的
+        cout<<"frame_sz:\t"<<first_frame.size()<<endl;
+        
+        cv::Rect first_rect=Rect(bbox.x,bbox.y,bbox.w,bbox.h);     //box格式的位置转换为rect格式的
+        //cout<<first_rect<<endl;
+
         tracker.init(first_rect,first_frame);        //初始化跟踪器
+        
     }
     else
     {
         
+        Mat current_frame=image_to_mat(img);       //获取当前帧的视频,这里是没有问题的，图像也能获取    
+        //目前的问题是调用这个更新就会报错，我也不知道是怎么回事
+        cv::Rect tracking_res=tracker.update(current_frame);     
+        cout<<"tracking_res\t"<<tracking_res<<endl;
     }
-    
-    //改天在写，今天好累！！190225
+    Begin++;
+    if(Begin==50)
+    {
+        tracking=0;
+        Begin=1;
+    }
+        //改天在写，今天好累！！190225
     
 }
 

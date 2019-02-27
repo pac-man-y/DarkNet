@@ -529,6 +529,16 @@ typedef struct {
  * 这个类可以类比opencv里的Rect类 
  **/
 
+
+typedef struct 
+{
+    int x;
+    int y;
+    int w;
+    int h;
+} c_rect;
+
+
 typedef struct{
     float x, y, w, h;
 } box;
