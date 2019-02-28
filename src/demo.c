@@ -34,7 +34,10 @@ static int running = 0;
 static int tracking=0;           //tracking的标志位，满足跟踪条件的标志位
 static c_rect track_box;            //detection转track_box是需要的track_box,这是自己定义的一个数据类型，box是float的不太适合在这里用
 static int track_begin=0;        //是否是跟踪开始的标志，如果是第一帧的话，在跟踪框架中需要初始化track。否则就不需要
+       //跟踪结果，返回值
 static int xx,yy,ww,hh;
+static float psr=0;
+static float track_fps=0;
 
 
 static int demo_frame = 3;
@@ -47,10 +50,7 @@ double demo_time;
 
 
 
-void fun1(int lala)
-{
-    printf("%d\n",lala);
-}
+
 
 
 detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num);
@@ -182,7 +182,8 @@ void *detect_in_thread(void *ptr)
     */
     if(nboxes>0)
     {
-        printf("%f\n",dets[0].prob[0]*100);
+
+        printf("the prob is:\t%f\n",dets[0].prob[0]*100);
         if(dets[0].prob[0]*100>=95)   //如果检测到的置信率大于95%的话就转入跟踪
         {
             tracking=1;        //进入跟踪状态
@@ -205,8 +206,16 @@ void *detect_in_thread(void *ptr)
         image current_img = buff[(buff_index+2) % 3];
         //printf("track_begin%d\t\n",track_begin);    //这里看着是1啊，但是到后面就直接成了172了，神奇
         //printf("bbox:%d\t%d\t%d\t%d\n",track_box.x,track_box.y,track_box.w,track_box.h); 
+        c_rect tracking_res;  
+        //demo_time=what_time_is_it_now();
+        kcf(current_img,track_box,&xx,&yy,&ww,&hh,&psr,&track_fps); 
+        //fps = 1./(what_time_is_it_now() - demo_time);      //这个就是帧率了
+        printf("FPS:\t%f\n",1.0/track_fps);
+        //这里输出跟踪结果，在这里来看的话基本都是可以的，下面就是要画框了，啊啊啊，终于可以有点进度了（190228）
+        printf("tracking res:\t %d   %d    %d    %d     PSR:   %f\n",xx,yy,ww,hh,psr);
+        
 
-        kcf(current_img,track_box,tracking); 
+        draw_box(current_img,xx,yy,xx+ww,yy+hh,0.0,0.0,255);
     }
 }
 
