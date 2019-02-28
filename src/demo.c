@@ -214,7 +214,6 @@ void *detect_in_thread(void *ptr)
         //这里输出跟踪结果，在这里来看的话基本都是可以的，下面就是要画框了，啊啊啊，终于可以有点进度了（190228）
         printf("tracking res:\t %d   %d    %d    %d     PSR:   %f\n",xx,yy,ww,hh,psr);
         
-
         draw_box(current_img,xx,yy,xx+ww,yy+hh,0.0,0.0,255);
     }
 }
