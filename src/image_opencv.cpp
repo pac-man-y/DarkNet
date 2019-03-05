@@ -166,8 +166,8 @@ void kcf_test()
 {
     printf("this is a kcf test code!!!\n");
     printf("hello world testing !\n");
-    vector<string> list=read_list("vot2015//list.txt");
-    string txtfile("results//txt2015//");
+    vector<string> list=read_list("vot2014//list.txt");
+    string txtfile("results//txt2014//");
 
     for(int i=0;i<list.size();i++)
     {
@@ -205,7 +205,7 @@ void kcf_test()
         
     
 
-        string path="vot2015//"+list[i]+"//";      //当前图片路径
+        string path="vot2014//"+list[i]+"//";      //当前图片路径
         cout<<path<<endl;
 
         int num_of_line=0;   //图片数量
