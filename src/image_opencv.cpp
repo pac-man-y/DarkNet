@@ -168,8 +168,9 @@ void kcf_test()
     printf("hello world testing !\n");
     vector<string> list=read_list("vot2015//list.txt");
     string txtfile("results//txt2015//");
+    cout<<"list_sz\t"<<list.size()<<endl;
 
-    for(int i=0;i<list.size();i++)
+    for(int i=34;i<list.size();i++)
     {
 
         cout<<"this is the VOT tracking test!!"<<endl;
@@ -242,6 +243,7 @@ void kcf_test()
         KCFTracker tracker_IN(true,true,false,true,false);    //构造hog_in
         KCFTracker tracker_S(true,true,true,false,false);    //构造hog_s
         KCFTracker tracker_IN_S(true,true,true,true,false);    //构造hog_in_s
+        cout<<"GT0\T"<<groundtruth[0]<<endl;
         tracker.init(groundtruth[0],img);      //初始化
         tracker_IN.init(groundtruth[0],img);
         tracker_S.init(groundtruth[0],img);
