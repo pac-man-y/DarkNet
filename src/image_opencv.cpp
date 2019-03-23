@@ -166,8 +166,8 @@ void kcf_test()
 {
     printf("this is a kcf test code!!!\n");
     printf("hello world testing !\n");
-    vector<string> list=read_list("vot2014//list.txt");
-    string txtfile("results//txt2014//");
+    vector<string> list=read_list("vot2015//list.txt");
+    string txtfile("results//txt2015//");
 
     for(int i=0;i<list.size();i++)
     {
@@ -179,33 +179,35 @@ void kcf_test()
         ofstream res_ground(txtfile + list[i] + "_res_ground.txt");
         //跟踪结果
 		ofstream res_kcf(txtfile + list[i] + "_res_kcf.txt");
-		ofstream res_kcf_inter(txtfile + list[i] + "_res_kcf_interpolation.txt");
-        ofstream res_kcf_lab(txtfile + list[i] + "_res_kcf_lab.txt");
-        ofstream res_kcf_inter_lab(txtfile + list[i] + "_res_kcf_interpolation_lab.txt");
+		ofstream res_kcf_in(txtfile + list[i] + "_res_kcf_in.txt");
+        ofstream res_kcf_s(txtfile + list[i] + "_res_kcf_s.txt");
+        ofstream res_kcf_in_s(txtfile + list[i] + "_res_kcf_in_s.txt");
 		
+        /*
         ofstream ave_fps_kcf("results//txtfile//" + list[i] + "_ave_fps_kcf.txt");
 		ofstream ave_fps_kcf_inter("results//txtfile//" + list[i] + "_ave_fps_kcf_inter.txt");
         ofstream ave_fps_kcf_lab("results//txtfile//" + list[i] + "_ave_fps_kcf_lab.txt");
 		ofstream ave_fps_kcf_inter_lab("results//txtfile//" + list[i] + "_ave_fps_kcf_inter_lab.txt");
-
+        */
 
 
         //表头
         res_ground<< "frame\tx\ty\twidth\theight\tfps\n";
 		res_kcf << "frame\tx\ty\twidth\theight\tfps\n";
-		res_kcf_inter << "frame\tx\ty\twidth\theight\tfps\n";
-        res_kcf_lab<<"frame\tx\ty\twidth\theight\tfps\n";
-        res_kcf_inter_lab<<"frame\tx\ty\twidth\theight\tfps\n";
+		res_kcf_in << "frame\tx\ty\twidth\theight\tfps\n";
+        res_kcf_s<<"frame\tx\ty\twidth\theight\tfps\n";
+        res_kcf_in_s<<"frame\tx\ty\twidth\theight\tfps\n";
 		
+        /*
         ave_fps_kcf<< "frame\tave_fps\n";
 		ave_fps_kcf_inter << "frame\tave_fps\n";
         ave_fps_kcf_lab<< "frame\tave_fps\n";
 		ave_fps_kcf_inter_lab << "frame\tave_fps\n";
-
+        */
         
     
 
-        string path="vot2014//"+list[i]+"//";      //当前图片路径
+        string path="vot2015//"+list[i]+"//";      //当前图片路径
         cout<<path<<endl;
 
         int num_of_line=0;   //图片数量
@@ -223,9 +225,9 @@ void kcf_test()
 
         //第一帧的跟踪结果就采用groundtruth里读取的值
         res_kcf << 1 << "\t" << groundtruth[0].x << "\t" << groundtruth[0].y << "\t" << groundtruth[0].width << "\t" << groundtruth[0].height <<"\t"<<0<< "\n";
-		res_kcf_inter << 1 << "\t" << groundtruth[0].x << "\t" << groundtruth[0].y << "\t" << groundtruth[0].width << "\t" << groundtruth[0].height <<"\t" <<0<< "\n";
-        res_kcf_lab << 1 << "\t" << groundtruth[0].x << "\t" << groundtruth[0].y << "\t" << groundtruth[0].width << "\t" << groundtruth[0].height <<"\t" <<0<< "\n";
-        res_kcf_inter_lab << 1 << "\t" << groundtruth[0].x << "\t" << groundtruth[0].y << "\t" << groundtruth[0].width << "\t" << groundtruth[0].height <<"\t" <<0<< "\n";
+		res_kcf_in << 1 << "\t" << groundtruth[0].x << "\t" << groundtruth[0].y << "\t" << groundtruth[0].width << "\t" << groundtruth[0].height <<"\t" <<0<< "\n";
+        res_kcf_s << 1 << "\t" << groundtruth[0].x << "\t" << groundtruth[0].y << "\t" << groundtruth[0].width << "\t" << groundtruth[0].height <<"\t" <<0<< "\n";
+        res_kcf_in_s << 1 << "\t" << groundtruth[0].x << "\t" << groundtruth[0].y << "\t" << groundtruth[0].width << "\t" << groundtruth[0].height <<"\t" <<0<< "\n";
         
         //跟踪结果保存的vector
         vector<cv::Rect> track_res;
@@ -236,14 +238,14 @@ void kcf_test()
         cv::Mat img=imread(path+"00000001.jpg");
         imshow("img",img);
         double all_time=0;
-        KCFTracker tracker(true,true,true,false,false);    //构造hog
-        KCFTracker tracker_IN(true,true,true,true,false);    //构造hog_in
-        KCFTracker tracker_lab(true,true,true,false,true);    //构造hog+lab
-        KCFTracker tracker_IN_lab(true,true,true,true,true);    //构造hog_in+lab
+        KCFTracker tracker(true,true,false,false,false);    //构造hog
+        KCFTracker tracker_IN(true,true,false,true,false);    //构造hog_in
+        KCFTracker tracker_S(true,true,true,false,false);    //构造hog_s
+        KCFTracker tracker_IN_S(true,true,true,true,false);    //构造hog_in_s
         tracker.init(groundtruth[0],img);      //初始化
         tracker_IN.init(groundtruth[0],img);
-        tracker_lab.init(groundtruth[0],img);
-        tracker_IN_lab.init(groundtruth[0],img);
+        tracker_S.init(groundtruth[0],img);
+        tracker_IN_S.init(groundtruth[0],img);
         cv::rectangle(img,groundtruth[0],cv::Scalar(0,0,255));   //第一帧画框
         
         for(int j=2;j<num_of_line;j++)
@@ -253,27 +255,27 @@ void kcf_test()
             
             cv::Mat frame=imread(img_path);    
             double start=static_cast<double>(getTickCount());
-            cv::Rect Rect_kcf_i=tracker_IN.update(frame);
+            cv::Rect Rect_kcf=tracker.update(frame);
             double time1=((double)getTickCount()-start)/getTickFrequency();
 
             start=static_cast<double>(getTickCount());
-            cv::Rect Rect_kcf=tracker.update(frame);
+            cv::Rect Rect_kcf_i=tracker_IN.update(frame);
             double time2=((double)getTickCount()-start)/getTickFrequency();
 
             start=static_cast<double>(getTickCount());
-            cv::Rect Rect_kcf_lab=tracker_lab.update(frame);
+            cv::Rect Rect_kcf_s=tracker_S.update(frame);
             double time3=((double)getTickCount()-start)/getTickFrequency();
 
             start=static_cast<double>(getTickCount());
-            cv::Rect Rect_kcf_IN_lab=tracker_IN_lab.update(frame);
+            cv::Rect Rect_kcf_in_s=tracker_IN_S.update(frame);
             double time4=((double)getTickCount()-start)/getTickFrequency();
 
 
             //主要的参数
             res_kcf << j << "\t" << Rect_kcf.x << "\t" << Rect_kcf.y << "\t" << Rect_kcf.width << "\t" << Rect_kcf.height << "\t" <<1.0/time2<<"\n";
-			res_kcf_inter << j << "\t" << Rect_kcf_i.x << "\t" << Rect_kcf_i.y << "\t" << Rect_kcf_i.width << "\t" << Rect_kcf_i.height << "\t" <<1.0/time1<<"\n";
-            res_kcf_lab << j << "\t" << Rect_kcf_lab.x << "\t" << Rect_kcf_lab.y << "\t" << Rect_kcf_lab.width << "\t" << Rect_kcf_lab.height << "\t" <<1.0/time3<<"\n";
-            res_kcf_inter_lab << j << "\t" << Rect_kcf_IN_lab.x << "\t" << Rect_kcf_IN_lab.y << "\t" << Rect_kcf_IN_lab.width << "\t" << Rect_kcf_IN_lab.height << "\t" <<1.0/time4<<"\n";
+			res_kcf_in << j << "\t" << Rect_kcf_i.x << "\t" << Rect_kcf_i.y << "\t" << Rect_kcf_i.width << "\t" << Rect_kcf_i.height << "\t" <<1.0/time1<<"\n";
+            res_kcf_s << j << "\t" << Rect_kcf_s.x << "\t" << Rect_kcf_s.y << "\t" << Rect_kcf_s.width << "\t" << Rect_kcf_s.height << "\t" <<1.0/time3<<"\n";
+            res_kcf_in_s << j << "\t" << Rect_kcf_in_s.x << "\t" << Rect_kcf_in_s.y << "\t" << Rect_kcf_in_s.width << "\t" << Rect_kcf_in_s.height << "\t" <<1.0/time4<<"\n";
 
           
             
@@ -283,8 +285,8 @@ void kcf_test()
 			rectangle(frame, groundtruth[j - 1], Scalar(255, 0, 0));
 			rectangle(frame, Rect_kcf, Scalar(0, 0, 255));
 			rectangle(frame, Rect_kcf_i, Scalar(0, 255, 0));
-            rectangle(frame, Rect_kcf_lab, Scalar(255, 255, 0));
-            rectangle(frame, Rect_kcf_IN_lab, Scalar(0, 255, 255));
+            rectangle(frame, Rect_kcf_s, Scalar(255, 255, 0));
+            rectangle(frame, Rect_kcf_in_s, Scalar(0, 255, 255));
 
             imshow("test",frame);
 	    waitKey(2);
