@@ -170,7 +170,7 @@ void kcf_test()
     string txtfile("results//txt2015//");
     cout<<"list_sz\t"<<list.size()<<endl;
 
-    for(int i=34;i<list.size();i++)
+    for(int i=0;i<list.size();i++)
     {
 
         cout<<"this is the VOT tracking test!!"<<endl;
@@ -239,10 +239,10 @@ void kcf_test()
         cv::Mat img=imread(path+"00000001.jpg");
         imshow("img",img);
         double all_time=0;
-        KCFTracker tracker(true,true,false,false,false);    //构造hog
-        KCFTracker tracker_IN(true,true,false,true,false);    //构造hog_in
-        KCFTracker tracker_S(true,true,true,false,false);    //构造hog_s
-        KCFTracker tracker_IN_S(true,true,true,true,false);    //构造hog_in_s
+        KCFTracker tracker(true,true,false,false,true);    //构造hog
+        KCFTracker tracker_IN(true,true,false,true,true);    //构造hog_in
+        KCFTracker tracker_S(true,true,true,false,true);    //构造hog_s
+        KCFTracker tracker_IN_S(true,true,true,true,true);    //构造hog_in_s
         cout<<"GT0\T"<<groundtruth[0]<<endl;
         tracker.init(groundtruth[0],img);      //初始化
         tracker_IN.init(groundtruth[0],img);
@@ -284,14 +284,17 @@ void kcf_test()
             //cout<<"fps\t"<<1./time<<endl;
             //cout<<"ave_fps:\t"<<double(i-1)/all_time<<endl;
             //蓝色groundtruth，红色KCF，绿色KCF_i
-			rectangle(frame, groundtruth[j - 1], Scalar(255, 0, 0));
+			/*
+            rectangle(frame, groundtruth[j - 1], Scalar(255, 0, 0));
 			rectangle(frame, Rect_kcf, Scalar(0, 0, 255));
 			rectangle(frame, Rect_kcf_i, Scalar(0, 255, 0));
             rectangle(frame, Rect_kcf_s, Scalar(255, 255, 0));
             rectangle(frame, Rect_kcf_in_s, Scalar(0, 255, 255));
 
             imshow("test",frame);
-	    waitKey(2);
+            */
+	        //waitKey(2);
+            cout<<i<<endl;
         }
     }
     
